@@ -39,7 +39,7 @@ export default function CaminDetailsPage() {
       const caminSnap = await getDoc(caminRef);
 
       if (caminSnap.exists()) {
-        const data = { id: caminSnap.id, ...caminSnap.data() };
+        const data: any = { id: caminSnap.id, ...caminSnap.data() };
         setCamin(data);
         setEditData({
           reprezentantName: data.reprezentant?.name || '',
