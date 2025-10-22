@@ -38,17 +38,18 @@ export default function AddCaminPage() {
         return;
       }
 
-      // Generare ID unic pentru cămin
-      const caminId = formData.name.toLowerCase().replace(/\s+/g, '-');
+      // Generare ID unic pentru location
+      const locationId = formData.name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
       
-      // Salvare cămin în Firestore
-      const caminRef = doc(db, 'companies', user.uid, 'camine', caminId);
-      await setDoc(caminRef, {
+      // Salvare location în Firestore (structura nouă: organizations/locations)
+      const locationRef = doc(db, 'organizations', user.uid, 'locations', locationId);
+      await setDoc(locationRef, {
         name: formData.name,
         address: formData.address,
         phone: formData.phone,
         email: formData.email,
         capacity: parseInt(formData.capacity) || 0,
+        type: 'camin', // Adăugăm tipul
         reprezentant: {
           name: formData.reprezentantName,
           phone: formData.reprezentantPhone,

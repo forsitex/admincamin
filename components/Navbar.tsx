@@ -69,7 +69,7 @@ export default function Navbar() {
               user ? (
                 <div className="flex items-center gap-3">
                   <Link 
-                    href="/dashboard" 
+                    href="/dashboard-new" 
                     className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
                   >
                     Dashboard
@@ -157,7 +157,7 @@ export default function Navbar() {
                 user ? (
                   <>
                     <Link 
-                      href="/dashboard" 
+                      href="/dashboard-new" 
                       className="mx-4 px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg text-center"
                       onClick={() => setMobileMenuOpen(false)}
                     >

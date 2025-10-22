@@ -3,11 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Building, Plus, Users, Home, Trash2, User, LogOut, Settings } from 'lucide-react';
+import { Building, Plus, Home, User, LogOut } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import Sidebar from '@/components/Sidebar';
+import CaminDashboard from '@/components/dashboards/CaminDashboard';
+import GradinitaDashboard from '@/components/dashboards/GradinitaDashboard';
+import SpitalDashboard from '@/components/dashboards/SpitalDashboard';
+import HotelDashboard from '@/components/dashboards/HotelDashboard';
 
 export default function DashboardNewPage() {
   const router = useRouter();
@@ -34,7 +38,13 @@ export default function DashboardNewPage() {
     try {
       if (!user) return;
 
-      await deleteDoc(doc(db, 'companies', user.uid, 'camine', caminId));
+      // Încearcă să ștergi din organizations/locations (structura nouă)
+      try {
+        await deleteDoc(doc(db, 'organizations', user.uid, 'locations', caminId));
+      } catch {
+        // Dacă nu merge, încearcă structura veche
+        await deleteDoc(doc(db, 'companies', user.uid, 'camine', caminId));
+      }
       
       // Reîncarcă lista
       setCamine(camine.filter(c => c.id !== caminId));
@@ -55,25 +65,57 @@ export default function DashboardNewPage() {
 
       setUser(currentUser);
 
-      // Încarcă date companie
+      // Verifică dacă există organizație și dacă are tip selectat
       try {
-        const companyRef = doc(db, 'companies', currentUser.uid);
-        const companySnap = await getDoc(companyRef);
+        // Încearcă să citești din organizations (structura nouă)
+        const organizationRef = doc(db, 'organizations', currentUser.uid);
+        const organizationSnap = await getDoc(organizationRef);
 
-        if (companySnap.exists()) {
-          setCompany(companySnap.data());
+        if (organizationSnap.exists()) {
+          const orgData = organizationSnap.data();
+          
+          // Verifică dacă are tip selectat
+          if (!orgData.type) {
+            console.log('⚠️ Organizație fără tip selectat - redirect la select-type');
+            router.push('/register/select-type');
+            return;
+          }
 
-          // Încarcă cămine
-          const camineRef = collection(db, 'companies', currentUser.uid, 'camine');
-          const camineSnap = await getDocs(camineRef);
-          const camineData = camineSnap.docs.map(doc => ({
+          setCompany(orgData);
+
+          // Încarcă locations (cămine/grădinițe/etc)
+          const locationsRef = collection(db, 'organizations', currentUser.uid, 'locations');
+          const locationsSnap = await getDocs(locationsRef);
+          const locationsData = locationsSnap.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
           }));
-          setCamine(camineData);
+          setCamine(locationsData);
+        } else {
+          // Încearcă structura veche (companies)
+          const companyRef = doc(db, 'companies', currentUser.uid);
+          const companySnap = await getDoc(companyRef);
+
+          if (companySnap.exists()) {
+            setCompany(companySnap.data());
+
+            // Încarcă cămine (structura veche)
+            const camineRef = collection(db, 'companies', currentUser.uid, 'camine');
+            const camineSnap = await getDocs(camineRef);
+            const camineData = camineSnap.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            setCamine(camineData);
+          } else {
+            // Nu există nici organizations, nici companies - redirect la select-type
+            console.log('⚠️ Nicio organizație găsită - redirect la select-type');
+            router.push('/register/select-type');
+            return;
+          }
         }
       } catch (error) {
-        console.error('Error loading company:', error);
+        console.error('Error loading organization:', error);
       }
 
       setLoading(false);
@@ -93,7 +135,71 @@ export default function DashboardNewPage() {
     );
   }
 
-  // Dashboard gol - fără cămine
+  // Funcție helper pentru text dinamic
+  const getEmptyStateText = () => {
+    switch (company?.type) {
+      case 'gradinita':
+        return {
+          title: 'Adaugă Prima Ta Grădiniță',
+          description: 'Pentru a începe să gestionezi copiii, mai întâi trebuie să adaugi o grădiniță.',
+          buttonText: 'Adaugă Grădiniță',
+          buttonLink: '/gradinite/add',
+          bgColor: 'bg-blue-100',
+          textColor: 'text-blue-600',
+          buttonColor: 'bg-blue-600 hover:bg-blue-700',
+          step1: 'Adaugă Grădiniță',
+          step1Desc: 'Configurează prima grădiniță',
+          step3: 'Adaugă Copii',
+          step3Desc: 'Generează documente'
+        };
+      case 'spital':
+        return {
+          title: 'Adaugă Prima Ta Clinică',
+          description: 'Pentru a începe să gestionezi pacienții, mai întâi trebuie să adaugi o clinică.',
+          buttonText: 'Adaugă Clinică',
+          buttonLink: '/clinici/add',
+          bgColor: 'bg-red-100',
+          textColor: 'text-red-600',
+          buttonColor: 'bg-red-600 hover:bg-red-700',
+          step1: 'Adaugă Clinică',
+          step1Desc: 'Configurează prima clinică',
+          step3: 'Adaugă Pacienți',
+          step3Desc: 'Generează fișe medicale'
+        };
+      case 'hotel':
+        return {
+          title: 'Adaugă Primul Tău Hotel',
+          description: 'Pentru a începe să gestionezi rezervările, mai întâi trebuie să adaugi un hotel.',
+          buttonText: 'Adaugă Hotel',
+          buttonLink: '/hoteluri/add',
+          bgColor: 'bg-orange-100',
+          textColor: 'text-orange-600',
+          buttonColor: 'bg-orange-600 hover:bg-orange-700',
+          step1: 'Adaugă Hotel',
+          step1Desc: 'Configurează primul hotel',
+          step3: 'Adaugă Rezervări',
+          step3Desc: 'Generează confirmări'
+        };
+      default: // camin
+        return {
+          title: 'Adaugă Primul Tău Cămin',
+          description: 'Pentru a începe să gestionezi rezidenții, mai întâi trebuie să adaugi un cămin.',
+          buttonText: 'Adaugă Cămin',
+          buttonLink: '/camine/add',
+          bgColor: 'bg-purple-100',
+          textColor: 'text-purple-600',
+          buttonColor: 'bg-purple-600 hover:bg-purple-700',
+          step1: 'Adaugă Cămin',
+          step1Desc: 'Configurează primul cămin',
+          step3: 'Adaugă Rezidenți',
+          step3Desc: 'Generează documente'
+        };
+    }
+  };
+
+  const emptyState = getEmptyStateText();
+
+  // Dashboard gol - fără locații
   if (camine.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
@@ -123,24 +229,24 @@ export default function DashboardNewPage() {
           <div className="max-w-2xl mx-auto">
             {/* Empty State Card */}
             <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-12 text-center">
-              <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Building className="w-12 h-12 text-purple-600" />
+              <div className={`w-24 h-24 ${emptyState.bgColor} rounded-full flex items-center justify-center mx-auto mb-6`}>
+                <Building className={`w-12 h-12 ${emptyState.textColor}`} />
               </div>
               
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Adaugă Primul Tău Cămin
+                {emptyState.title}
               </h2>
               
               <p className="text-lg text-gray-600 mb-8">
-                Pentru a începe să gestionezi rezidenții, mai întâi trebuie să adaugi un cămin.
+                {emptyState.description}
               </p>
 
               <Link
-                href="/camine/add"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-purple-600 text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition shadow-lg hover:shadow-xl transform hover:scale-105"
+                href={emptyState.buttonLink}
+                className={`inline-flex items-center gap-3 px-8 py-4 ${emptyState.buttonColor} text-white rounded-xl font-bold text-lg transition shadow-lg hover:shadow-xl transform hover:scale-105`}
               >
                 <Plus className="w-6 h-6" />
-                Adaugă Cămin
+                {emptyState.buttonText}
               </Link>
 
               {/* Steps Preview */}
@@ -153,8 +259,8 @@ export default function DashboardNewPage() {
                     <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold mb-2">
                       1
                     </div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Adaugă Cămin</h4>
-                    <p className="text-sm text-gray-600">Configurează primul cămin</p>
+                    <h4 className="font-semibold text-gray-900 mb-1">{emptyState.step1}</h4>
+                    <p className="text-sm text-gray-600">{emptyState.step1Desc}</p>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg opacity-50">
                     <div className="w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center font-bold mb-2">
@@ -167,8 +273,8 @@ export default function DashboardNewPage() {
                     <div className="w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center font-bold mb-2">
                       3
                     </div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Adaugă Rezidenți</h4>
-                    <p className="text-sm text-gray-600">Generează documente</p>
+                    <h4 className="font-semibold text-gray-900 mb-1">{emptyState.step3}</h4>
+                    <p className="text-sm text-gray-600">{emptyState.step3Desc}</p>
                   </div>
                 </div>
               </div>
@@ -183,7 +289,7 @@ export default function DashboardNewPage() {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <Sidebar company={company} userEmail={user?.email} />
+      <Sidebar company={company} userEmail={user?.email} organizationType={company?.type || 'camin'} />
       
       {/* Main Content */}
       <div className="flex-1 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50">
@@ -250,48 +356,23 @@ export default function DashboardNewPage() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content - Dashboard Dinamic */}
       <div className="container mx-auto px-4 sm:px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {camine.map((camin, index) => (
-            <div 
-              key={`camin-${camin.id}-${index}`} 
-              className="relative bg-white rounded-lg shadow p-6 overflow-hidden group hover:shadow-2xl transition-all duration-300"
-              style={{
-                animation: 'float 6s ease-in-out infinite'
-              }}
-            >
-              {/* Glow Effect - Permanent */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 rounded-lg blur opacity-75 animate-glow"></div>
-              
-              {/* Card Content */}
-              <div className="relative">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Building className="w-6 h-6 text-purple-600" />
-                </div>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{camin.name}</h3>
-              <p className="text-gray-600 text-sm mb-4">{camin.address}</p>
-              <div className="flex items-center gap-2">
-                <Link
-                  href={`/camine/${camin.id}`}
-                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg text-center font-semibold hover:bg-black transition"
-                >
-                  Vezi detalii
-                </Link>
-                <button
-                  onClick={() => handleDeleteCamin(camin.id, camin.name)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
-                  title="Șterge cămin"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        {company?.type === 'camin' && (
+          <CaminDashboard locations={camine} onDelete={handleDeleteCamin} />
+        )}
+        {company?.type === 'gradinita' && (
+          <GradinitaDashboard locations={camine} onDelete={handleDeleteCamin} />
+        )}
+        {company?.type === 'spital' && (
+          <SpitalDashboard locations={camine} onDelete={handleDeleteCamin} />
+        )}
+        {company?.type === 'hotel' && (
+          <HotelDashboard locations={camine} onDelete={handleDeleteCamin} />
+        )}
+        {!company?.type && (
+          <CaminDashboard locations={camine} onDelete={handleDeleteCamin} />
+        )}
       </div>
       </div>
     </div>

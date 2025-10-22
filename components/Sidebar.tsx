@@ -4,33 +4,21 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  LayoutDashboard, 
-  Shield,
-  GraduationCap,
-  Utensils,
-  Image,
-  FileText,
-  UserCircle,
-  Users,
-  DollarSign,
-  Heart,
-  Stethoscope,
-  Home as HomeIcon,
-  ClipboardList,
   LogOut,
   ChevronLeft,
-  ChevronRight,
-  Home
+  ChevronRight
 } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { getSidebarConfig, getOrganizationTypeLabel, type OrganizationType } from '@/lib/sidebar-config';
 
 interface SidebarProps {
   company?: any;
   userEmail?: string;
+  organizationType?: OrganizationType;
 }
 
-export default function Sidebar({ company, userEmail }: SidebarProps) {
+export default function Sidebar({ company, userEmail, organizationType = 'camin' }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
@@ -44,132 +32,9 @@ export default function Sidebar({ company, userEmail }: SidebarProps) {
     }
   };
 
-  const menuItems = [
-    {
-      icon: Home,
-      label: 'Acasă',
-      href: '/',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      hoverColor: 'hover:bg-blue-100'
-    },
-    {
-      icon: LayoutDashboard,
-      label: 'Dashboard',
-      href: '/dashboard-new',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      hoverColor: 'hover:bg-purple-100'
-    },
-    {
-      icon: Shield,
-      label: 'Asigurări Malpraxis',
-      href: '#',
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      hoverColor: 'hover:bg-red-100',
-      badge: 'Nou'
-    },
-    {
-      icon: GraduationCap,
-      label: 'Formare Continuă',
-      href: '#',
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
-      hoverColor: 'hover:bg-indigo-100',
-      badge: 'Nou'
-    },
-    {
-      icon: Utensils,
-      label: 'Meniu Nutriționist',
-      href: '#',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      hoverColor: 'hover:bg-green-100',
-      badge: 'Nou'
-    },
-    {
-      icon: Image,
-      label: 'Galerie Foto',
-      href: '#',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      hoverColor: 'hover:bg-purple-100',
-      badge: 'Soon'
-    },
-    {
-      icon: FileText,
-      label: 'Contracte',
-      href: '#',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      hoverColor: 'hover:bg-blue-100',
-      badge: 'Soon'
-    },
-    {
-      icon: UserCircle,
-      label: 'Beneficiari',
-      href: '#',
-      color: 'text-cyan-600',
-      bgColor: 'bg-cyan-50',
-      hoverColor: 'hover:bg-cyan-100',
-      badge: 'Soon'
-    },
-    {
-      icon: Users,
-      label: 'Aparținători',
-      href: '#',
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-50',
-      hoverColor: 'hover:bg-teal-100',
-      badge: 'Soon'
-    },
-    {
-      icon: DollarSign,
-      label: 'Facturi',
-      href: '#',
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50',
-      hoverColor: 'hover:bg-emerald-100',
-      badge: 'Soon'
-    },
-    {
-      icon: Heart,
-      label: 'Cabinet Medical',
-      href: '#',
-      color: 'text-pink-600',
-      bgColor: 'bg-pink-50',
-      hoverColor: 'hover:bg-pink-100',
-      badge: 'Soon'
-    },
-    {
-      icon: Stethoscope,
-      label: 'Infirmier',
-      href: '#',
-      color: 'text-rose-600',
-      bgColor: 'bg-rose-50',
-      hoverColor: 'hover:bg-rose-100',
-      badge: 'Soon'
-    },
-    {
-      icon: HomeIcon,
-      label: 'Curățenie',
-      href: '#',
-      color: 'text-violet-600',
-      bgColor: 'bg-violet-50',
-      hoverColor: 'hover:bg-violet-100',
-      badge: 'Soon'
-    },
-    {
-      icon: ClipboardList,
-      label: 'Modele Proceduri',
-      href: '#',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-      hoverColor: 'hover:bg-orange-100',
-      badge: 'Nou'
-    }
-  ];
+  // Obține configurația sidebar-ului bazată pe tipul organizației
+  const menuItems = getSidebarConfig(organizationType);
+  const orgTypeLabel = getOrganizationTypeLabel(organizationType);
 
   return (
     <div 
@@ -187,6 +52,9 @@ export default function Sidebar({ company, userEmail }: SidebarProps) {
               </h2>
               <p className="text-gray-400 text-xs truncate mt-1">
                 {userEmail}
+              </p>
+              <p className="text-purple-400 text-xs font-semibold mt-1">
+                {orgTypeLabel}
               </p>
             </div>
           )}

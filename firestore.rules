@@ -2,9 +2,92 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Reguli pentru colecția iEmpathy - permite tot pentru dezvoltare
-    match /iEmpathy/{document=**} {
-      allow read, write: if true;
+    // ============================================
+    // VECHEA STRUCTURĂ iEmpathy (COMPATIBILITATE)
+    // ============================================
+    match /iEmpathy/{caminId}/residents/{residentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ============================================
+    // NOUA STRUCTURĂ - ORGANIZATIONS (MULTI-INDUSTRY)
+    // ============================================
+    
+    // Organizations - doar owner-ul poate accesa
+    match /organizations/{organizationId} {
+      // Read: doar owner-ul organizației
+      allow read: if request.auth != null && request.auth.uid == organizationId;
+      
+      // Write: doar owner-ul organizației
+      allow write: if request.auth != null && request.auth.uid == organizationId;
+      
+      // Locations (generic pentru toate industriile)
+      match /locations/{locationId} {
+        allow read, write: if request.auth != null && request.auth.uid == organizationId;
+        
+        // Rezidenți (pentru cămin)
+        match /residents/{residentId} {
+          allow read, write: if request.auth != null && request.auth.uid == organizationId;
+        }
+        
+        // Copii (pentru grădiniță)
+        match /copii/{copilId} {
+          allow read, write: if request.auth != null && request.auth.uid == organizationId;
+        }
+        
+        // Pacienți (pentru spital)
+        match /pacienti/{pacientId} {
+          allow read, write: if request.auth != null && request.auth.uid == organizationId;
+        }
+        
+        // Rezervări (pentru hotel)
+        match /rezervari/{rezervareId} {
+          allow read, write: if request.auth != null && request.auth.uid == organizationId;
+        }
+        
+        // Orice altă sub-colecție
+        match /{document=**} {
+          allow read, write: if request.auth != null && request.auth.uid == organizationId;
+        }
+      }
+      
+      // Orice altă sub-colecție la nivel de organizație
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == organizationId;
+      }
+    }
+    
+    // ============================================
+    // VECHEA STRUCTURĂ - COMPANIES (COMPATIBILITATE)
+    // ============================================
+    
+    // Companies - doar owner-ul poate accesa
+    match /companies/{companyId} {
+      // Read: doar owner-ul companiei
+      allow read: if request.auth != null && request.auth.uid == companyId;
+      
+      // Write: doar owner-ul companiei
+      allow write: if request.auth != null && request.auth.uid == companyId;
+      
+      // Cămine
+      match /camine/{caminId} {
+        allow read, write: if request.auth != null && request.auth.uid == companyId;
+        
+        // Rezidenți per cămin
+        match /residents/{residentId} {
+          allow read, write: if request.auth != null && request.auth.uid == companyId;
+        }
+        
+        // Orice altă sub-colecție
+        match /{document=**} {
+          allow read, write: if request.auth != null && request.auth.uid == companyId;
+        }
+      }
+      
+      // Orice altă sub-colecție la nivel de companie
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == companyId;
+      }
     }
   }
 }

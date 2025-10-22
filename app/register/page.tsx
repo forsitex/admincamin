@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { Lock, Mail, Eye, EyeOff, User } from 'lucide-react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { createCompany } from '@/lib/firestore';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -48,18 +47,16 @@ export default function RegisterPage() {
       
       console.log('✅ Cont creat cu succes!', userCredential.user.email);
       
-      // Salvare companie în Firestore
-      await createCompany(userCredential.user.uid, companyName, email);
-      
-      // Salvare user + companie în localStorage
+      // NU salvăm încă în Firestore - o facem după selectarea tipului
+      // Salvare user în localStorage
       localStorage.setItem('user', JSON.stringify({
         email: userCredential.user.email,
         uid: userCredential.user.uid,
         companyName: companyName
       }));
 
-      // Redirect la dashboard
-      router.push('/dashboard');
+      // Redirect la pagina de selectare tip organizație
+      router.push('/register/select-type');
     } catch (err: any) {
       console.error('❌ Eroare creare cont:', err);
       
