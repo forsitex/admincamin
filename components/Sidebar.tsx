@@ -8,8 +8,7 @@ import {
   Shield,
   GraduationCap,
   Utensils,
-  ShoppingCart,
-  Building2,
+  Image,
   FileText,
   UserCircle,
   Users,
@@ -90,21 +89,12 @@ export default function Sidebar({ company, userEmail }: SidebarProps) {
       badge: 'Nou'
     },
     {
-      icon: ShoppingCart,
-      label: 'Magazin',
+      icon: Image,
+      label: 'Galerie Foto',
       href: '#',
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50',
-      hoverColor: 'hover:bg-yellow-100',
-      badge: 'Nou'
-    },
-    {
-      icon: Building2,
-      label: 'Organizații',
-      href: '#',
-      color: 'text-gray-600',
-      bgColor: 'bg-gray-50',
-      hoverColor: 'hover:bg-gray-100',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      hoverColor: 'hover:bg-purple-100',
       badge: 'Soon'
     },
     {
@@ -211,13 +201,13 @@ export default function Sidebar({ company, userEmail }: SidebarProps) {
 
       {/* Menu Items */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {menuItems.map((item) => {
+        {menuItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           
           return (
             <Link
-              key={item.href}
+              key={`menu-${item.label}-${index}`}
               href={item.href}
               className={`
                 flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200

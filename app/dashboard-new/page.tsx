@@ -206,6 +206,12 @@ export default function DashboardNewPage() {
                 <span className="hidden sm:inline">Acasă</span>
               </Link>
               <Link
+                href="/pricing"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-bold hover:from-yellow-500 hover:to-orange-600 transition shadow-lg"
+              >
+                ⭐ Upgrade
+              </Link>
+              <Link
                 href="/camine/add"
                 className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
               >
@@ -247,8 +253,8 @@ export default function DashboardNewPage() {
       {/* Content */}
       <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {camine.map((camin) => (
-            <div key={camin.id} className="bg-white rounded-lg shadow p-6">
+          {camine.map((camin, index) => (
+            <div key={`camin-${camin.id}-${index}`} className="bg-white rounded-lg shadow p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                   <Building className="w-6 h-6 text-purple-600" />
@@ -261,7 +267,7 @@ export default function DashboardNewPage() {
                   href={`/camine/${camin.id}`}
                   className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-center font-semibold hover:bg-purple-700 transition"
                 >
-                  Deschide
+                  Vezi detalii
                 </Link>
                 <button
                   onClick={() => handleDeleteCamin(camin.id, camin.name)}
