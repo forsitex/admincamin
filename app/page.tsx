@@ -38,10 +38,10 @@ export default function HomePage() {
                 Vezi Prețurile
               </Link>
               <Link 
-                href="/login"
+                href="#despre"
                 className="w-full sm:w-auto px-8 py-4 bg-purple-600 border-2 border-white text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition shadow-lg"
               >
-                Acces Dashboard
+                Despre Noi
               </Link>
             </div>
           </div>
