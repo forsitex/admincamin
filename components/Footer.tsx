@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Mail, Phone, MapPin } from 'lucide-react';
 
 export default function Footer() {
@@ -8,10 +9,18 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-4">Admin Camin Batrani</h3>
+            <Link href="/" className="inline-block mb-4">
+              <Image 
+                src="/aiafacere-logo.png" 
+                alt="iEmpathy Platform" 
+                width={150} 
+                height={50}
+                className="h-10 w-auto brightness-0 invert"
+              />
+            </Link>
             <p className="text-sm text-gray-400">
-              Platforma SaaS pentru gestionarea eficientă a căminelor de bătrâni. 
-              Simplifică procesele administrative și îmbunătățește calitatea serviciilor.
+              Platformă SaaS multi-industry cu tehnologie AI de ultimă generație. 
+              Soluții complete pentru cămine, grădinițe, spitale și hoteluri.
             </p>
           </div>
 
@@ -44,12 +53,12 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-4">Servicii</h3>
+            <h3 className="text-white font-bold text-lg mb-4">Servicii AI</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li>Gestionare Rezidenți</li>
-              <li>Generare Documente</li>
-              <li>Facturare Automată</li>
-              <li>Rapoarte & Statistici</li>
+              <li>Analiză Documente AI</li>
+              <li>Asistent Multi-Domeniu</li>
+              <li>Generare Automată</li>
+              <li>Analiză Predictivă</li>
             </ul>
           </div>
 
@@ -79,7 +88,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Admin Camin Batrani. Toate drepturile rezervate.</p>
+          <p>&copy; {new Date().getFullYear()} iEmpathy Platform. Toate drepturile rezervate.</p>
         </div>
       </div>
     </footer>

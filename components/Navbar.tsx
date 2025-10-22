@@ -40,11 +40,11 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image 
-              src="/admin-camine.png" 
-              alt="Admin Camin Batrani" 
-              width={150} 
-              height={50}
-              className="h-10 sm:h-12 w-auto"
+              src="/aiafacere-logo.png" 
+              alt="iEmpathy - AI Business Platform" 
+              width={180} 
+              height={60}
+              className="h-12 sm:h-14 w-auto"
             />
           </Link>
 

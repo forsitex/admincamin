@@ -61,8 +61,8 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link href="/">
             <Image 
-              src="/admin-camine.png" 
-              alt="Admin Camin Batrani" 
+              src="/aiafacere-logo.png" 
+              alt="iEmpathy - AI Business Platform" 
               width={200} 
               height={70}
               className="mx-auto mb-4"
