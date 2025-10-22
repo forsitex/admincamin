@@ -9,10 +9,40 @@ import {
   query,
   where,
   orderBy,
-  Timestamp
+  Timestamp,
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Resident } from '@/types/resident';
+
+// ============================================
+// COMPANY FUNCTIONS
+// ============================================
+
+export async function createCompany(userId: string, companyName: string, email: string) {
+  try {
+    const companyRef = doc(db, 'companies', userId);
+    
+    await setDoc(companyRef, {
+      name: companyName,
+      email: email,
+      createdAt: serverTimestamp(),
+      ownerId: userId,
+      camine: [],
+      representatives: []
+    });
+    
+    console.log('✅ Companie creată:', companyName);
+    return userId;
+  } catch (error) {
+    console.error('❌ Error creating company:', error);
+    throw error;
+  }
+}
+
+// ============================================
+// RESIDENT FUNCTIONS
+// ============================================
 
 // Salvare rezident în Firestore
 export async function saveResident(resident: Resident): Promise<string> {

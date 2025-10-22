@@ -7,10 +7,11 @@ import Image from 'next/image';
 import { Lock, Mail, Eye, EyeOff, User } from 'lucide-react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { createCompany } from '@/lib/firestore';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [name, setName] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -37,21 +38,24 @@ export default function RegisterPage() {
 
     try {
       // Creare cont cu Firebase Auth
-      console.log('📝 Creare cont nou:', email);
+      console.log('📝 Creare cont nou firmă:', companyName, email);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Actualizare profil cu numele
+      // Actualizare profil cu numele firmei
       await updateProfile(userCredential.user, {
-        displayName: name
+        displayName: companyName
       });
       
       console.log('✅ Cont creat cu succes!', userCredential.user.email);
       
-      // Salvare user în localStorage
+      // Salvare companie în Firestore
+      await createCompany(userCredential.user.uid, companyName, email);
+      
+      // Salvare user + companie în localStorage
       localStorage.setItem('user', JSON.stringify({
         email: userCredential.user.email,
         uid: userCredential.user.uid,
-        displayName: name
+        companyName: companyName
       }));
 
       // Redirect la dashboard
@@ -94,20 +98,20 @@ export default function RegisterPage() {
         {/* Register Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleRegister} className="space-y-6">
-            {/* Name */}
+            {/* Company Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Nume complet
+              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
+                Nume Firmă
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="name"
+                  id="companyName"
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ion Popescu"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="EMPATHY SUPPORT SRL"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition uppercase"
                   required
                 />
               </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import Step1CompanyCamin from '@/components/forms/Step1CompanyCamin';
@@ -10,6 +10,9 @@ import Step4Contract from '@/components/forms/Step4Contract';
 import Step5Medical from '@/components/forms/Step5Medical';
 import { saveResident, generateNumarDosar, generateNumarContract } from '@/lib/firestore';
 import { Resident } from '@/types/resident';
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 
 const STEPS = [
   { id: 1, name: 'Firmă & Cămin' },
@@ -24,6 +27,45 @@ export default function AddResidentPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [company, setCompany] = useState<any>(null);
+  const [camine, setCamine] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        // Încarcă date companie
+        const companyRef = doc(db, 'companies', currentUser.uid);
+        const companySnap = await getDoc(companyRef);
+
+        if (companySnap.exists()) {
+          const companyData = companySnap.data();
+          setCompany(companyData);
+
+          // Încarcă cămine
+          const camineRef = collection(db, 'companies', currentUser.uid, 'camine');
+          const camineSnap = await getDocs(camineRef);
+          const camineData = camineSnap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setCamine(camineData);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        setError('Eroare la încărcarea datelor. Te rugăm să reîncarci pagina.');
+      } finally {
+        setLoadingData(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const [formData, setFormData] = useState({
     // Step 1 - Firmă & Cămin
@@ -92,8 +134,8 @@ export default function AddResidentPage() {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
-        if (!formData.companyCui || !formData.caminId) {
-          setError('Selectează firma și căminul');
+        if (!formData.caminId) {
+          setError('Selectează căminul');
           return false;
         }
         break;
@@ -325,26 +367,39 @@ export default function AddResidentPage() {
             </div>
           )}
 
-          {/* Steps */}
-          {currentStep === 1 && (
-            <Step1CompanyCamin data={formData} onChange={handleChange} />
-          )}
-          {currentStep === 2 && (
-            <Step2Beneficiar data={formData} onChange={handleChange} />
-          )}
-          {currentStep === 3 && (
-            <Step3Apartinator data={formData} onChange={handleChange} />
-          )}
-          {currentStep === 4 && (
-            <Step4Contract data={formData} onChange={handleChange} />
-          )}
-          {currentStep === 5 && (
-            <Step5Medical data={formData} onChange={handleChange} />
-          )}
+          {/* Loading */}
+          {loadingData ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Se încarcă datele...</p>
+            </div>
+          ) : (
+            <>
+              {/* Steps */}
+              {currentStep === 1 && (
+                <Step1CompanyCamin 
+                  data={formData} 
+                  onChange={handleChange}
+                  company={company}
+                  camine={camine}
+                />
+              )}
+              {currentStep === 2 && (
+                <Step2Beneficiar data={formData} onChange={handleChange} />
+              )}
+              {currentStep === 3 && (
+                <Step3Apartinator data={formData} onChange={handleChange} />
+              )}
+              {currentStep === 4 && (
+                <Step4Contract data={formData} onChange={handleChange} />
+              )}
+              {currentStep === 5 && (
+                <Step5Medical data={formData} onChange={handleChange} />
+              )}
 
-          {/* Navigation Buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 mt-6 sm:mt-8 pt-6 border-t">
-            <button
+              {/* Navigation Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 mt-6 sm:mt-8 pt-6 border-t">
+                <button
               onClick={handleBack}
               disabled={currentStep === 1}
               className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
@@ -382,7 +437,9 @@ export default function AddResidentPage() {
                 )}
               </button>
             )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -83,12 +83,20 @@ export default function Navbar() {
                   </button>
                 </div>
               ) : (
-                <Link 
-                  href="/login" 
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
-                >
-                  Login
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Link 
+                    href="/login" 
+                    className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
+                  >
+                    Login
+                  </Link>
+                  <Link 
+                    href="/register" 
+                    className="px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition shadow-lg"
+                  >
+                    Înregistrare
+                  </Link>
+                </div>
               )
             )}
           </div>
@@ -167,13 +175,22 @@ export default function Navbar() {
                     </button>
                   </>
                 ) : (
-                  <Link 
-                    href="/login" 
-                    className="mx-4 px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg text-center"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Login
-                  </Link>
+                  <>
+                    <Link 
+                      href="/login" 
+                      className="mx-4 px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg text-center"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                    <Link 
+                      href="/register" 
+                      className="mx-4 px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition shadow-lg text-center"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Înregistrare
+                    </Link>
+                  </>
                 )
               )}
             </div>
