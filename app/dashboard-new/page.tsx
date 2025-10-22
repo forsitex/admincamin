@@ -186,7 +186,7 @@ export default function DashboardNewPage() {
       <Sidebar company={company} userEmail={user?.email} />
       
       {/* Main Content */}
-      <div className="flex-1 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="flex-1 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50">
       {/* Header */}
       <div className="bg-white shadow">
         <div className="container mx-auto px-4 sm:px-6 py-6">
@@ -213,7 +213,7 @@ export default function DashboardNewPage() {
               </Link>
               <Link
                 href="/camine/add"
-                className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
+                className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-black transition shadow-lg"
               >
                 <Plus className="w-5 h-5" />
                 Adaugă Cămin
@@ -254,7 +254,18 @@ export default function DashboardNewPage() {
       <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {camine.map((camin, index) => (
-            <div key={`camin-${camin.id}-${index}`} className="bg-white rounded-lg shadow p-6">
+            <div 
+              key={`camin-${camin.id}-${index}`} 
+              className="relative bg-white rounded-lg shadow p-6 overflow-hidden group hover:shadow-2xl transition-all duration-300"
+              style={{
+                animation: 'float 6s ease-in-out infinite'
+              }}
+            >
+              {/* Glow Effect - Permanent */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 rounded-lg blur opacity-75 animate-glow"></div>
+              
+              {/* Card Content */}
+              <div className="relative">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                   <Building className="w-6 h-6 text-purple-600" />
@@ -265,7 +276,7 @@ export default function DashboardNewPage() {
               <div className="flex items-center gap-2">
                 <Link
                   href={`/camine/${camin.id}`}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-center font-semibold hover:bg-purple-700 transition"
+                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg text-center font-semibold hover:bg-black transition"
                 >
                   Vezi detalii
                 </Link>
@@ -276,6 +287,7 @@ export default function DashboardNewPage() {
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
+              </div>
               </div>
             </div>
           ))}

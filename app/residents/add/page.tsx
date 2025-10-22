@@ -141,10 +141,7 @@ export default function AddResidentPage() {
         break;
       case 2:
         if (!formData.beneficiarNumeComplet || !formData.beneficiarCnp || 
-            !formData.beneficiarDataNasterii || !formData.beneficiarAdresa ||
-            !formData.beneficiarCiSerie || !formData.beneficiarCiNumar ||
-            !formData.beneficiarCiEliberatData || !formData.beneficiarCiEliberatDe ||
-            !formData.beneficiarCiValabilPana) {
+            !formData.beneficiarDataNasterii || !formData.beneficiarAdresa) {
           setError('Completează toate câmpurile obligatorii pentru beneficiar');
           return false;
         }
@@ -152,10 +149,7 @@ export default function AddResidentPage() {
       case 3:
         if (!formData.apartinatorNumeComplet || !formData.apartinatorCnp ||
             !formData.apartinatorRelatie || !formData.apartinatorTelefon ||
-            !formData.apartinatorEmail || !formData.apartinatorAdresa ||
-            !formData.apartinatorCiSerie || !formData.apartinatorCiNumar ||
-            !formData.apartinatorCiEliberatData || !formData.apartinatorCiEliberatDe ||
-            !formData.apartinatorCiValabilPana) {
+            !formData.apartinatorEmail || !formData.apartinatorAdresa) {
           setError('Completează toate câmpurile obligatorii pentru aparținător');
           return false;
         }

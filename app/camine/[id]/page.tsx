@@ -117,7 +117,7 @@ export default function CaminDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50">
       {/* Header cu gradient */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg">
         <div className="container mx-auto px-4 sm:px-6 py-6">
@@ -134,8 +134,11 @@ export default function CaminDetailsPage() {
       {/* Content */}
       <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="max-w-5xl mx-auto space-y-8">
-          {/* Detalii Cămin - Card cu gradient */}
-          <div className="bg-gradient-to-br from-white to-purple-50 rounded-3xl shadow-2xl p-8 border-2 border-purple-200 transform hover:scale-[1.02] transition-all duration-300">
+          {/* Detalii Cămin - Card cu gradient și glow */}
+          <div className="relative bg-gradient-to-br from-white to-purple-50 rounded-3xl shadow-2xl p-8 border-2 border-purple-200 transform hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+            {/* Glow Effect - Permanent */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 rounded-3xl blur-lg opacity-75 animate-glow"></div>
+            <div className="relative z-10">
             <div className="flex items-start justify-between mb-8">
               <div className="flex items-center gap-6">
                 <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform">
@@ -162,10 +165,11 @@ export default function CaminDetailsPage() {
                 <p className="text-xl font-bold text-gray-900">{camin.capacity} paturi</p>
               </div>
             </div>
+            </div>
           </div>
 
-          {/* Reprezentant Cămin - Card colorat */}
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl shadow-2xl p-8 border-2 border-blue-200">
+          {/* Reprezentant Cămin - Card simplu */}
+          <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
@@ -269,8 +273,11 @@ export default function CaminDetailsPage() {
             )}
           </div>
 
-          {/* Lista Rezidenți - Card vibrant */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl shadow-2xl p-8 border-2 border-purple-200">
+          {/* Lista Rezidenți - Card vibrant cu glow */}
+          <div className="relative bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl shadow-2xl p-8 border-2 border-purple-200 overflow-hidden">
+            {/* Glow Effect - Permanent */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 rounded-3xl blur-lg opacity-75 animate-glow"></div>
+            <div className="relative z-10">
             <h2 className="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">Rezidenți</h2>
             <div className="text-center py-16">
               <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
@@ -283,6 +290,7 @@ export default function CaminDetailsPage() {
               >
                 + Adaugă Rezident
               </Link>
+            </div>
             </div>
           </div>
         </div>

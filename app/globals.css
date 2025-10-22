@@ -29,3 +29,27 @@ input::placeholder,
 textarea::placeholder {
   color: #9ca3af !important;
 }
+
+/* 3D Glow Effect pentru card-uri */
+@keyframes glow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-glow {
+  background-size: 200% 200%;
+  animation: glow 3s ease infinite;
+}
