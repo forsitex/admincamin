@@ -17,16 +17,19 @@ import { Resident } from '@/types/resident';
 // Salvare rezident în Firestore
 export async function saveResident(resident: Resident): Promise<string> {
   try {
+    console.log('📍 Firestore path:', `iEmpathy/${resident.caminId}/residents/${resident.beneficiarCnp}`);
     const residentRef = doc(db, 'iEmpathy', resident.caminId, 'residents', resident.beneficiarCnp);
     
+    console.log('💾 Salvare date în Firestore...');
     await setDoc(residentRef, {
       ...resident,
       dataInregistrare: Date.now()
     });
     
+    console.log('✅ Salvare reușită!');
     return resident.beneficiarCnp;
   } catch (error) {
-    console.error('Error saving resident:', error);
+    console.error('❌ Error saving resident:', error);
     throw error;
   }
 }

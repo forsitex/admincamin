@@ -57,25 +57,25 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white shadow">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600 mt-1">Gestionează rezidenții din cămine</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">Gestionează rezidenții din cămine</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <Link
                 href="/"
-                className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition"
+                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition text-sm sm:text-base"
               >
-                <Home className="w-5 h-5" />
+                <Home className="w-4 h-4 sm:w-5 sm:h-5" />
                 Pagina Principală
               </Link>
               <Link
                 href="/residents/add"
-                className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
+                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg text-sm sm:text-base"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                 Adaugă Rezident
               </Link>
             </div>
@@ -83,9 +83,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>

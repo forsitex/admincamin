@@ -1,107 +1,63 @@
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import Link from 'next/link';
-import Image from 'next/image';
-import { FileText, ArrowRight, Home, Users, Building2, DollarSign, Heart, Stethoscope, Settings } from 'lucide-react';
+import { FileText, Users, Building2, Check, ArrowRight, Heart, Stethoscope, DollarSign, Mail, Phone, MapPin } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-200">
-          <Image 
-            src="/admin-camine.png" 
-            alt="Admin Camine" 
-            width={180} 
-            height={60}
-            className="w-full h-auto"
+    <div className="min-h-screen bg-white">
+      <Navbar />
+      
+      {/* Hero Section */}
+      <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-24 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?q=80&w=2000')",
+            }}
           />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/90 via-purple-800/85 to-blue-900/90" />
         </div>
 
-        {/* Menu */}
-        <nav className="flex-1 p-4">
-          <Link 
-            href="/dashboard"
-            className="flex items-center gap-3 px-4 py-3 text-white bg-purple-600 rounded-lg mb-2 font-medium"
-          >
-            <FileText className="w-5 h-5" />
-            Contracte
-          </Link>
-
-          <button disabled className="flex items-center gap-3 px-4 py-3 text-gray-400 rounded-lg mb-2 cursor-not-allowed w-full">
-            <Users className="w-5 h-5" />
-            Beneficiari
-          </button>
-
-          <button disabled className="flex items-center gap-3 px-4 py-3 text-gray-400 rounded-lg mb-2 cursor-not-allowed w-full">
-            <Users className="w-5 h-5" />
-            Aparținători
-          </button>
-
-          <button disabled className="flex items-center gap-3 px-4 py-3 text-gray-400 rounded-lg mb-2 cursor-not-allowed w-full">
-            <DollarSign className="w-5 h-5" />
-            Facturi
-          </button>
-
-          <button disabled className="flex items-center gap-3 px-4 py-3 text-gray-400 rounded-lg mb-2 cursor-not-allowed w-full">
-            <Heart className="w-5 h-5" />
-            Cabinet Medical
-          </button>
-
-          <button disabled className="flex items-center gap-3 px-4 py-3 text-gray-400 rounded-lg mb-2 cursor-not-allowed w-full">
-            <Stethoscope className="w-5 h-5" />
-            Infirmier
-          </button>
-
-          <button disabled className="flex items-center gap-3 px-4 py-3 text-gray-400 rounded-lg mb-2 cursor-not-allowed w-full">
-            <Building2 className="w-5 h-5" />
-            Curățenie
-          </button>
-
-          <button disabled className="flex items-center gap-3 px-4 py-3 text-gray-400 rounded-lg mb-2 cursor-not-allowed w-full">
-            <Settings className="w-5 h-5" />
-            Mai Multe Module
-          </button>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Sistem de Management pentru Cămine de Bătrâni</h1>
-            <Link 
-              href="/dashboard"
-              className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition"
-            >
-              Dashboard
-            </Link>
-          </div>
-        </header>
-
-        {/* Hero Content */}
-        <div className="flex-1 p-12 overflow-y-auto">
-          <div className="max-w-6xl mx-auto">
-            {/* Hero Section */}
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Bine ai venit în sistemul de management
-              </h2>
-              <p className="text-xl text-gray-600 mb-8">
-                Gestionează rezidenții, generează documente automat și simplifică procesele administrative
-              </p>
+        {/* Content */}
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-lg">
+              Gestionează Căminele de Bătrâni <span className="text-purple-300">Eficient</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-purple-100 mb-8 max-w-2xl mx-auto drop-shadow">
+              Platforma SaaS completă pentru administratorii de cămine. Generare automată de documente, gestionare rezidenți și mult mai mult.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link 
-                href="/residents/add"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition shadow-lg"
+                href="#preturi"
+                className="w-full sm:w-auto px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:bg-purple-50 transition shadow-lg"
               >
-                Adaugă Rezident Nou
-                <ArrowRight className="w-5 h-5" />
+                Vezi Prețurile
+              </Link>
+              <Link 
+                href="/login"
+                className="w-full sm:w-auto px-8 py-4 bg-purple-600 border-2 border-white text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition shadow-lg"
+              >
+                Acces Dashboard
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Features Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      {/* Features Section */}
+      <section id="servicii" className="py-16 sm:py-24 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Servicii Complete pentru Cămine</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Tot ce ai nevoie pentru a gestiona eficient căminul de bătrâni într-o singură platformă
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               <FeatureCard 
                 icon={<FileText className="w-8 h-8 text-purple-600" />}
                 title="Generare Automată Documente"
@@ -125,25 +81,130 @@ export default function HomePage() {
               <FeatureCard 
                 icon={<DollarSign className="w-8 h-8 text-yellow-600" />}
                 title="Facturare & Plăți"
-                description="Urmărește costurile, contribuțiile și generează facturi automat pentru fiecare rezident (În curând)."
+                description="Urmărește costurile, contribuțiile și generează facturi automat pentru fiecare rezident."
               />
               <FeatureCard 
                 icon={<Stethoscope className="w-8 h-8 text-teal-600" />}
                 title="Monitorizare Medicală"
-                description="Gestionează fișele medicale, tratamentele și consultațiile pentru fiecare beneficiar (În curând)."
+                description="Gestionează fișele medicale, tratamentele și consultațiile pentru fiecare beneficiar."
               />
             </div>
+        </div>
+      </section>
 
-            {/* Stats */}
-            <div className="grid md:grid-cols-4 gap-6">
+      {/* Despre Noi Section */}
+      <section id="despre" className="py-16 sm:py-24 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">Despre Platforma Noastră</h2>
+            <p className="text-lg text-gray-600 mb-8">
+              Admin Camin Batrani este platforma SaaS dedicată administratorilor de cămine de bătrâni din România. 
+              Oferim soluții complete pentru gestionarea eficientă a rezidenților, generarea automată de documente legale 
+              și simplificarea proceselor administrative.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <StatCard number="4" label="Cămine Active" color="purple" />
-              <StatCard number="16" label="Documente Disponibile" color="blue" />
-              <StatCard number="2" label="Firme Gestionate" color="green" />
-              <StatCard number="100%" label="Cloud Backup" color="orange" />
+              <StatCard number="16" label="Documente" color="blue" />
+              <StatCard number="2" label="Firme" color="green" />
+              <StatCard number="100%" label="Cloud" color="orange" />
             </div>
           </div>
         </div>
-      </main>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="preturi" className="py-16 sm:py-24 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Prețuri Simple și Transparente</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Alege planul potrivit pentru căminul tău. Fără costuri ascunse.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+            <PricingCard 
+              name="Standard"
+              price="99"
+              features={[
+                "1 Cămin",
+                "Până la 50 rezidenți",
+                "16 Documente PDF",
+                "Suport Email",
+                "Cloud Backup"
+              ]}
+            />
+            <PricingCard 
+              name="Premium"
+              price="200"
+              popular={true}
+              features={[
+                "Până la 2 Cămine",
+                "Până la 150 rezidenți",
+                "16 Documente PDF",
+                "Suport Prioritar",
+                "Cloud Backup",
+                "Rapoarte Avansate"
+              ]}
+            />
+            <PricingCard 
+              name="Gold"
+              price="500"
+              features={[
+                "Cămine Nelimitate",
+                "Rezidenți Nelimitați",
+                "16 Documente PDF",
+                "Suport 24/7",
+                "Cloud Backup",
+                "Rapoarte Personalizate",
+                "API Access"
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-16 sm:py-24 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Contactează-ne</h2>
+              <p className="text-lg text-gray-600">
+                Ai întrebări? Suntem aici să te ajutăm!
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-4">
+                  <Phone className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">Telefon</h3>
+                <a href="tel:0786300500" className="text-gray-600 hover:text-purple-600 transition">
+                  0786 300 500
+                </a>
+              </div>
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-4">
+                  <Mail className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">Email</h3>
+                <a href="mailto:contact@admincamin.ro" className="text-gray-600 hover:text-purple-600 transition">
+                  contact@admincamin.ro
+                </a>
+              </div>
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-4">
+                  <MapPin className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">Locație</h3>
+                <p className="text-gray-600">București, România</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </div>
   );
 }
@@ -170,6 +231,50 @@ function StatCard({ number, label, color }: { number: string; label: string; col
     <div className={`rounded-xl p-6 border-2 text-center ${colorClasses[color as keyof typeof colorClasses]}`}>
       <div className="text-4xl font-bold mb-2">{number}</div>
       <div className="text-sm font-medium">{label}</div>
+    </div>
+  );
+}
+
+function PricingCard({ name, price, features, popular = false }: { 
+  name: string; 
+  price: string; 
+  features: string[]; 
+  popular?: boolean 
+}) {
+  return (
+    <div className={`bg-white rounded-2xl p-8 shadow-lg border-2 ${popular ? 'border-purple-600 relative' : 'border-gray-200'}`}>
+      {popular && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+          <span className="bg-purple-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+            POPULAR
+          </span>
+        </div>
+      )}
+      <div className="text-center mb-6">
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
+        <div className="flex items-baseline justify-center gap-1">
+          <span className="text-5xl font-bold text-gray-900">{price}</span>
+          <span className="text-gray-600">lei/lună</span>
+        </div>
+      </div>
+      <ul className="space-y-4 mb-8">
+        {features.map((feature, index) => (
+          <li key={index} className="flex items-start gap-3">
+            <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <span className="text-gray-700">{feature}</span>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href="/login"
+        className={`block w-full text-center px-6 py-3 rounded-lg font-bold transition ${
+          popular 
+            ? 'bg-purple-600 text-white hover:bg-purple-700' 
+            : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+        }`}
+      >
+        Începe Acum
+      </Link>
     </div>
   );
 }

@@ -229,7 +229,9 @@ export default function AddResidentPage() {
       };
 
       // Salvare în Firestore
-      await saveResident(resident);
+      console.log('🔥 Încercare salvare rezident:', resident);
+      const savedCnp = await saveResident(resident);
+      console.log('✅ Rezident salvat cu succes! CNP:', savedCnp);
 
       // Redirect la success page
       router.push(`/residents/success?cnp=${resident.beneficiarCnp}`);
