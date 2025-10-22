@@ -55,6 +55,7 @@ export const CAMINE: Camin[] = [
 export const CONTACT_PHONE = "0786300500";
 
 export const LOGO_PATH = "/logo-empathy.png"; // Logo local în public/
+export const LOGO_URL = "/logo-empathy.png"; // Alias pentru compatibilitate
 
 export const RELATII_APARTINATOR = [
   "Fiu",
