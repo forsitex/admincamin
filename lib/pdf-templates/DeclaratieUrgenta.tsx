@@ -7,6 +7,7 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { Resident } from '@/types/resident';
 import './fonts';
 import { PDFHeader } from './PDFHeader';
+import { PDFSignatures } from './PDFSignatures';
 
 const styles = StyleSheet.create({
   page: {
@@ -66,7 +67,7 @@ export const DeclaratieUrgenta: React.FC<DeclaratieUrgentaProps> = ({ resident, 
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        <PDFHeader company={company} camin={camin} />
+        <PDFHeader company={company} />
 
         {/* Titlu */}
         <Text style={styles.title}>DECLARATIE</Text>
@@ -91,12 +92,7 @@ export const DeclaratieUrgenta: React.FC<DeclaratieUrgentaProps> = ({ resident, 
         <Text style={styles.date}>Data: {contractDate}</Text>
 
         {/* Semnături */}
-        <View style={styles.signatureSection}>
-          <Text style={styles.signatureText}>Beneficiar,</Text>
-          <Text style={styles.signatureText}>{resident.beneficiarNumeComplet}</Text>
-          <Text style={[styles.signatureText, { marginTop: 30 }]}>Apartinator/Reprezentant legal/conventional,</Text>
-          <Text style={styles.signatureText}>{resident.apartinatorNumeComplet}</Text>
-        </View>
+        <PDFSignatures resident={resident} company={company} showStamp={true} />
       </Page>
     </Document>
   );

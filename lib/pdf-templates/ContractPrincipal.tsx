@@ -494,28 +494,7 @@ export const ContractPrincipal: React.FC<ContractPrincipalProps> = ({ resident, 
         </View>
 
         {/* SEMNĂTURI */}
-        <View style={styles.signatures}>
-          <View style={styles.signatureBlock}>
-            <Text style={styles.signatureLabel}>{contractDate}</Text>
-            <Text style={styles.signatureLabel}>Beneficiarul de servicii sociale,</Text>
-            <Text style={styles.signatureName}>{resident.beneficiarNumeComplet}</Text>
-            <Text style={styles.signatureLabel}>Reprezentant legal / Apartinator,</Text>
-            <Text style={styles.signatureName}>{resident.apartinatorNumeComplet}</Text>
-          </View>
-
-          <View style={styles.signatureBlock}>
-            <Text style={styles.signatureLabel}>Furnizorul de servicii sociale,</Text>
-            <Text style={styles.signatureName}>{company?.name}</Text>
-            {/* Semnătură administrator */}
-            {company?.cui === '50780956' ? (
-              <Image src="/signatures/semnatura-octavian.png" style={styles.signatureImageOctavian} />
-            ) : (
-              <Image src="/signatures/semnatura-raluca.png" style={styles.signatureImageRaluca} />
-            )}
-            <Text style={styles.signatureName}>{company?.position},</Text>
-            <Text style={styles.signatureName}>{company?.representative}</Text>
-          </View>
-        </View>
+        <PDFSignatures resident={resident} company={company} showStamp={true} />
 
         <View style={styles.footer} fixed>
           <Text>| Pagina nr. 5</Text>

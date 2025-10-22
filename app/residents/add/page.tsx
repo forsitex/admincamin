@@ -26,62 +26,62 @@ export default function AddResidentPage() {
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
-    // Step 1 - PRE-COMPLETAT PENTRU TEST
-    companyCui: '50780956', // EMPATHY SUPPORT SRL
-    caminId: 'fortunei',
+    // Step 1 - Firmă & Cămin
+    companyCui: '',
+    caminId: '',
     
-    // Step 2 - PRE-COMPLETAT PENTRU TEST
-    beneficiarNumeComplet: 'POPESCU ION GHEORGHE',
-    beneficiarCnp: '1790808464545',
-    beneficiarDataNasterii: '08.08.1979',
-    beneficiarAdresa: 'Str. Fortunei, nr. 10, Bl. A1, Sc. B, Et. 3, Ap. 15, Sector 1, București, România',
-    beneficiarCodPostal: '014321',
-    beneficiarCiSerie: 'RC',
-    beneficiarCiNumar: '123456',
-    beneficiarCiEliberatData: '2020-01-15',
-    beneficiarCiEliberatDe: 'SCGTP',
-    beneficiarCiValabilPana: '2030-01-15',
+    // Step 2 - Beneficiar
+    beneficiarNumeComplet: '',
+    beneficiarCnp: '',
+    beneficiarDataNasterii: '',
+    beneficiarAdresa: '',
+    beneficiarCodPostal: '',
+    beneficiarCiSerie: '',
+    beneficiarCiNumar: '',
+    beneficiarCiEliberatData: '',
+    beneficiarCiEliberatDe: '',
+    beneficiarCiValabilPana: '',
     
-    // Step 3 - PRE-COMPLETAT PENTRU TEST
-    apartinatorNumeComplet: 'POPESCU MARIA',
-    apartinatorCnp: '2850505123456',
-    apartinatorRelatie: 'Fiică',
-    apartinatorTelefon: '0721234567',
-    apartinatorEmail: 'maria.popescu@email.ro',
-    apartinatorAdresa: 'Str. Florilor, nr. 25, Bl. B2, Sc. A, Et. 2, Ap. 8, Sector 2, București, România',
-    apartinatorCiSerie: 'ZX',
-    apartinatorCiNumar: '654321',
-    apartinatorCiEliberatData: '2019-05-20',
-    apartinatorCiEliberatDe: 'SCHPF',
-    apartinatorCiValabilPana: '2029-05-20',
+    // Step 3 - Aparținător
+    apartinatorNumeComplet: '',
+    apartinatorCnp: '',
+    apartinatorRelatie: '',
+    apartinatorTelefon: '',
+    apartinatorEmail: '',
+    apartinatorAdresa: '',
+    apartinatorCiSerie: '',
+    apartinatorCiNumar: '',
+    apartinatorCiEliberatData: '',
+    apartinatorCiEliberatDe: '',
+    apartinatorCiValabilPana: '',
     
-    // Step 4 - PRE-COMPLETAT PENTRU TEST
-    costServiciu: '3500.00',
-    contributieBeneficiar: '2000.00',
-    dataInceputContract: new Date().toISOString().split('T')[0],
+    // Step 4 - Contract
+    costServiciu: '',
+    contributieBeneficiar: '',
+    dataInceputContract: '',
     dataSfarsitContract: '',
-    durataNedeterminata: true,
+    durataNedeterminata: false,
     
-    // Step 5 - PRE-COMPLETAT PENTRU TEST (opțional)
-    provenienta: 'De acasă',
+    // Step 5 - Medical (opțional)
+    provenienta: '',
     provenientaDetalii: '',
-    diagnostic: 'Diabet zaharat tip 2, Hipertensiune arteriala',
-    alergii: 'Penicilina',
-    alimentatie: 'Dieta hipoglucidica',
-    incontinenta: 'Nu',
-    mobilitate: 'Independent',
-    greutate: '75',
-    comportament: 'Cooperant, calm',
-    medicFamilieNume: 'Dr. Ionescu Ana',
-    medicFamilieTelefon: '0723456789',
-    medicFamilieEmail: 'dr.ionescu@cabinet.ro',
-    tensiuneArteriala: '130/80',
-    puls: '72',
-    glicemie: '110',
-    temperatura: '36.6',
-    saturatieOxigen: '98%',
-    escare: 'Nu',
-    stareGenerala: 'Stare generala buna, cooperant, orientat temporo-spatial'
+    diagnostic: '',
+    alergii: '',
+    alimentatie: '',
+    incontinenta: '',
+    mobilitate: '',
+    greutate: '',
+    comportament: '',
+    medicFamilieNume: '',
+    medicFamilieTelefon: '',
+    medicFamilieEmail: '',
+    tensiuneArteriala: '',
+    puls: '',
+    glicemie: '',
+    temperatura: '',
+    saturatieOxigen: '',
+    escare: '',
+    stareGenerala: ''
   });
 
   const handleChange = (field: string, value: string | boolean) => {

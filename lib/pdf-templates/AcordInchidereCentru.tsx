@@ -91,7 +91,7 @@ export const AcordInchidereCentru: React.FC<AcordInchidereCentruProps> = ({ resi
         </Text>
 
         {/* Semnături */}
-        <PDFSignatures resident={resident} company={company} />
+        <PDFSignatures resident={resident} company={company} showStamp={true} />
       </Page>
     </Document>
   );

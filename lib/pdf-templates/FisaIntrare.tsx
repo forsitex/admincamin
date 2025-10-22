@@ -7,6 +7,7 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { Resident } from '@/types/resident';
 import './fonts';
 import { PDFHeader } from './PDFHeader';
+import { PDFSignatures } from './PDFSignatures';
 
 const styles = StyleSheet.create({
   page: {
@@ -150,6 +151,9 @@ export const FisaIntrare: React.FC<FisaIntrareProps> = ({ resident, company, cam
         <Text style={styles.dotLine}>...................................................................................</Text>
 
         <Text style={[styles.dotLine, { marginTop: 30 }]}>Nume si semnatura asistent medical: ............................................</Text>
+
+        {/* Semnături */}
+        <PDFSignatures resident={resident} company={company} showStamp={true} />
       </Page>
     </Document>
   );

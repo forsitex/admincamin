@@ -137,7 +137,7 @@ export default function HomePage() {
             {/* Stats */}
             <div className="grid md:grid-cols-4 gap-6">
               <StatCard number="4" label="Cămine Active" color="purple" />
-              <StatCard number="16" label="Documente Auto" color="blue" />
+              <StatCard number="16" label="Documente Disponibile" color="blue" />
               <StatCard number="2" label="Firme Gestionate" color="green" />
               <StatCard number="100%" label="Cloud Backup" color="orange" />
             </div>

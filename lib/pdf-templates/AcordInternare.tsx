@@ -80,7 +80,7 @@ export const AcordInternare: React.FC<AcordInternareProps> = ({ resident, compan
         </Text>
 
         {/* Semnături */}
-        <PDFSignatures resident={resident} company={company} />
+        <PDFSignatures resident={resident} company={company} showStamp={true} />
       </Page>
     </Document>
   );

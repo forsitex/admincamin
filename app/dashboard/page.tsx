@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Search, Filter, FileText, Trash2, Edit } from 'lucide-react';
+import { Users, Plus, Search, Filter, FileText, Trash2, Edit, Home } from 'lucide-react';
 import { getResidentsByCamin } from '@/lib/firestore';
 import { Resident } from '@/types/resident';
 import { CAMINE, COMPANIES } from '@/lib/constants';
@@ -63,13 +63,22 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
               <p className="text-gray-600 mt-1">Gestionează rezidenții din cămine</p>
             </div>
-            <Link
-              href="/residents/add"
-              className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
-            >
-              <Plus className="w-5 h-5" />
-              Adaugă Rezident
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition"
+              >
+                <Home className="w-5 h-5" />
+                Pagina Principală
+              </Link>
+              <Link
+                href="/residents/add"
+                className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
+              >
+                <Plus className="w-5 h-5" />
+                Adaugă Rezident
+              </Link>
+            </div>
           </div>
         </div>
       </div>

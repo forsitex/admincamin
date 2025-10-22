@@ -7,6 +7,7 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { Resident } from '@/types/resident';
 import './fonts';
 import { PDFHeader } from './PDFHeader';
+import { PDFSignatures } from './PDFSignatures';
 
 const styles = StyleSheet.create({
   page: {
@@ -85,20 +86,7 @@ export const PVCardSanatate: React.FC<PVCardSanatateProps> = ({ resident, compan
         </Text>
 
         {/* Semnături */}
-        <View style={styles.signatureSection}>
-          <View style={styles.signatureBlock}>
-            <Text style={styles.signatureText}>Am predat,</Text>
-            <View style={styles.signatureLine} />
-            <Text style={styles.signatureText}>Semnatura:</Text>
-          </View>
-
-          <View style={styles.signatureBlock}>
-            <Text style={styles.signatureText}>Am primit,</Text>
-            <Text style={styles.signatureText}>REPREZENTANT {company.name}</Text>
-            <View style={styles.signatureLine} />
-            <Text style={styles.signatureText}>Semnatura:</Text>
-          </View>
-        </View>
+        <PDFSignatures resident={resident} company={company} showStamp={true} />
       </Page>
     </Document>
   );

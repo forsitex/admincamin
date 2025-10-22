@@ -7,6 +7,7 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { Resident } from '@/types/resident';
 import './fonts';
 import { PDFHeader } from './PDFHeader';
+import { PDFSignatures } from './PDFSignatures';
 
 const styles = StyleSheet.create({
   page: {
@@ -65,7 +66,7 @@ export const CerereAdmitere: React.FC<CerereAdmitereProps> = ({ resident, compan
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        <PDFHeader company={company} camin={camin} />
+        <PDFHeader company={company} />
 
         {/* Număr */}
         <Text style={styles.numar}>Nr. ......./...............</Text>
@@ -85,15 +86,11 @@ export const CerereAdmitere: React.FC<CerereAdmitereProps> = ({ resident, compan
           îngrijirea necesara si raspunsul adecvat la nevoilor existente.
         </Text>
 
+        {/* Data */}
+        <Text style={styles.text}>Data: {contractDate}</Text>
+
         {/* Semnături */}
-        <View style={styles.signatures}>
-          <View style={styles.signatureBlock}>
-            <Text style={styles.signatureLabel}>Data: {contractDate}</Text>
-          </View>
-          <View style={styles.signatureBlock}>
-            <Text style={styles.signatureLabel}>Semnatura:</Text>
-          </View>
-        </View>
+        <PDFSignatures resident={resident} company={company} showStamp={true} />
       </Page>
     </Document>
   );
