@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Reguli pentru colecția iEmpathy - permite tot pentru dezvoltare
+    match /iEmpathy/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
