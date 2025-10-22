@@ -192,7 +192,7 @@ export default function Step2Beneficiar({ data, onChange }: Step2Props) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              CI Serie <span className="text-red-500">*</span>
+              CI Serie
             </label>
             <input
               type="text"
@@ -201,12 +201,11 @@ export default function Step2Beneficiar({ data, onChange }: Step2Props) {
               placeholder="RC"
               maxLength={2}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition uppercase"
-              required
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              CI Număr <span className="text-red-500">*</span>
+              CI Număr
             </label>
             <input
               type="text"
@@ -218,7 +217,6 @@ export default function Step2Beneficiar({ data, onChange }: Step2Props) {
               placeholder="549011"
               maxLength={6}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition"
-              required
             />
           </div>
         </div>
@@ -226,21 +224,20 @@ export default function Step2Beneficiar({ data, onChange }: Step2Props) {
         {/* Eliberat la data */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Eliberat la data <span className="text-red-500">*</span>
+            Eliberat la data
           </label>
           <input
             type="date"
             value={data.beneficiarCiEliberatData}
             onChange={(e) => onChange('beneficiarCiEliberatData', e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition"
-            required
           />
         </div>
 
         {/* Eliberat de */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Eliberat de <span className="text-red-500">*</span>
+            Eliberat de
           </label>
           <input
             type="text"
@@ -248,7 +245,6 @@ export default function Step2Beneficiar({ data, onChange }: Step2Props) {
             onChange={(e) => onChange('beneficiarCiEliberatDe', e.target.value.toUpperCase())}
             placeholder="SCGTP"
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition uppercase"
-            required
           />
           <p className="mt-1 text-xs text-gray-500">ex: SCGTP, SCHPF, SPCLEP</p>
         </div>
@@ -256,14 +252,13 @@ export default function Step2Beneficiar({ data, onChange }: Step2Props) {
         {/* Valabil până la */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Valabil până la <span className="text-red-500">*</span>
+            Valabil până la
           </label>
           <input
             type="date"
             value={data.beneficiarCiValabilPana}
             onChange={(e) => onChange('beneficiarCiValabilPana', e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition"
-            required
           />
         </div>
       </div>

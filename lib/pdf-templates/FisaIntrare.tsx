@@ -84,31 +84,37 @@ export const FisaIntrare: React.FC<FisaIntrareProps> = ({ resident, company, cam
 
         {/* Proveniență */}
         <View style={styles.section}>
-          <Text style={styles.field}>De unde provine: [ ] de acasa / [ ] din spital .............................................;</Text>
-          <Text style={styles.field}>[ ] din alt centru ................................................................;</Text>
-          <Text style={styles.field}>[ ] ALTA VARIANTA ................................................................;</Text>
+          <Text style={styles.field}>
+            De unde provine: [{resident.provenienta === 'De acasă' ? 'X' : ' '}] de acasa / [{resident.provenienta === 'Din spital' ? 'X' : ' '}] din spital;
+          </Text>
+          <Text style={styles.field}>
+            [{resident.provenienta === 'Din alt centru' ? 'X' : ' '}] din alt centru {resident.provenientaDetalii ? `(${resident.provenientaDetalii})` : ''};
+          </Text>
+          <Text style={styles.field}>
+            [{resident.provenienta === 'Alta' ? 'X' : ' '}] ALTA VARIANTA {resident.provenientaDetalii ? `(${resident.provenientaDetalii})` : ''};
+          </Text>
         </View>
 
         {/* Date medicale */}
         <View style={styles.section}>
-          <Text style={styles.dotLine}>Diagnostic: ..........................................................................</Text>
-          <Text style={styles.dotLine}>Alergii: ............................................................................</Text>
-          <Text style={styles.dotLine}>Alimentatie: ........................................................................</Text>
-          <Text style={styles.dotLine}>Incontinenta: .........................................................................</Text>
-          <Text style={styles.dotLine}>Mobilitate: ..........................................................................</Text>
-          <Text style={styles.dotLine}>Greutate: ...........................................................................</Text>
-          <Text style={styles.dotLine}>Comportament / Violenta: ............................................................</Text>
-          <Text style={styles.dotLine}>Medic de familie: ...................................................................</Text>
-          <Text style={styles.dotLine}>     Nume: .........................................................................</Text>
-          <Text style={styles.dotLine}>     Telefon: .................... E-mail: ........................................</Text>
+          <Text style={styles.field}>Diagnostic: <Text style={styles.bold}>{resident.diagnostic || '...........................................................................'}</Text></Text>
+          <Text style={styles.field}>Alergii: <Text style={styles.bold}>{resident.alergii || '..................................................................................'}</Text></Text>
+          <Text style={styles.field}>Alimentatie: <Text style={styles.bold}>{resident.alimentatie || '.............................................................................'}</Text></Text>
+          <Text style={styles.field}>Incontinenta: <Text style={styles.bold}>{resident.incontinenta || '............................................................................'}</Text></Text>
+          <Text style={styles.field}>Mobilitate: <Text style={styles.bold}>{resident.mobilitate || '...............................................................................'}</Text></Text>
+          <Text style={styles.field}>Greutate: <Text style={styles.bold}>{resident.greutate ? `${resident.greutate} kg` : '..................................................................................'}</Text></Text>
+          <Text style={styles.field}>Comportament / Violenta: <Text style={styles.bold}>{resident.comportament || '.........................................................'}</Text></Text>
+          <Text style={styles.field}>Medic de familie: <Text style={styles.bold}>{resident.medicFamilieNume || '................................................................'}</Text></Text>
+          <Text style={styles.field}>     Nume: <Text style={styles.bold}>{resident.medicFamilieNume || '.......................................................................'}</Text></Text>
+          <Text style={styles.field}>     Telefon: <Text style={styles.bold}>{resident.medicFamilieTelefon || '..................'}</Text> E-mail: <Text style={styles.bold}>{resident.medicFamilieEmail || '........................................'}</Text></Text>
         </View>
 
-        {/* Persoană contact */}
+        {/* Persoană contact - Aparținător */}
         <View style={styles.section}>
-          <Text style={styles.dotLine}>Persoane de contact: ................................................................</Text>
-          <Text style={styles.dotLine}>     Nume: .........................................................................</Text>
-          <Text style={styles.dotLine}>     Telefon: .................... E-mail: ........................................</Text>
-          <Text style={styles.dotLine}>     Adresa: ........................................................................</Text>
+          <Text style={styles.field}>Persoane de contact: <Text style={styles.bold}>{resident.apartinatorNumeComplet}</Text></Text>
+          <Text style={styles.field}>     Nume: <Text style={styles.bold}>{resident.apartinatorNumeComplet}</Text></Text>
+          <Text style={styles.field}>     Telefon: <Text style={styles.bold}>{resident.apartinatorTelefon}</Text> E-mail: <Text style={styles.bold}>{resident.apartinatorEmail}</Text></Text>
+          <Text style={styles.field}>     Adresa: <Text style={styles.bold}>{resident.apartinatorAdresa}</Text></Text>
         </View>
 
         {/* Aparținător */}

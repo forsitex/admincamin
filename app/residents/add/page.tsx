@@ -246,12 +246,12 @@ export default function AddResidentPage() {
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white shadow">
-        <div className="container mx-auto px-6 py-4">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition text-sm sm:text-base"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             Înapoi la Dashboard
           </button>
         </div>
@@ -259,8 +259,9 @@ export default function AddResidentPage() {
 
       {/* Progress Bar */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          {/* Desktop Progress */}
+          <div className="hidden md:flex items-center justify-between">
             {STEPS.map((step, index) => (
               <div key={step.id} className="flex items-center flex-1">
                 <div className="flex flex-col items-center flex-1">
@@ -293,12 +294,30 @@ export default function AddResidentPage() {
               </div>
             ))}
           </div>
+
+          {/* Mobile Progress - Simple */}
+          <div className="md:hidden">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-900">
+                Pasul {currentStep} din {STEPS.length}
+              </span>
+              <span className="text-sm text-gray-600">
+                {STEPS[currentStep - 1].name}
+              </span>
+            </div>
+            <div className="w-full bg-gray-300 rounded-full h-2">
+              <div
+                className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Form Content */}
-      <div className="container mx-auto px-6 py-8">
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
@@ -324,39 +343,41 @@ export default function AddResidentPage() {
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 mt-6 sm:mt-8 pt-6 border-t">
             <button
               onClick={handleBack}
               disabled={currentStep === 1}
-              className="flex items-center gap-2 px-6 py-3 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               Înapoi
             </button>
 
             {currentStep < 5 ? (
               <button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition"
+                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition text-sm sm:text-base"
               >
                 Următorul
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex items-center gap-2 px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-4 sm:px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Se salvează...
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                    <span className="hidden sm:inline">Se salvează...</span>
+                    <span className="sm:hidden">Salvare...</span>
                   </>
                 ) : (
                   <>
-                    <Check className="w-5 h-5" />
-                    Salvează și Generează Documente
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">Salvează și Generează Documente</span>
+                    <span className="sm:hidden">Finalizare</span>
                   </>
                 )}
               </button>

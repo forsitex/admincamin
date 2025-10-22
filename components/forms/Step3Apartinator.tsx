@@ -215,7 +215,7 @@ export default function Step3Apartinator({ data, onChange }: Step3Props) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              CI Serie <span className="text-red-500">*</span>
+              CI Serie
             </label>
             <input
               type="text"
@@ -224,12 +224,11 @@ export default function Step3Apartinator({ data, onChange }: Step3Props) {
               placeholder="ZX"
               maxLength={2}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition uppercase"
-              required
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              CI Număr <span className="text-red-500">*</span>
+              CI Număr
             </label>
             <input
               type="text"
@@ -241,7 +240,6 @@ export default function Step3Apartinator({ data, onChange }: Step3Props) {
               placeholder="906782"
               maxLength={6}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition"
-              required
             />
           </div>
         </div>
@@ -249,21 +247,20 @@ export default function Step3Apartinator({ data, onChange }: Step3Props) {
         {/* Eliberat la data */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Eliberat la data <span className="text-red-500">*</span>
+            Eliberat la data
           </label>
           <input
             type="date"
             value={data.apartinatorCiEliberatData}
             onChange={(e) => onChange('apartinatorCiEliberatData', e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition"
-            required
           />
         </div>
 
         {/* Eliberat de */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Eliberat de <span className="text-red-500">*</span>
+            Eliberat de
           </label>
           <input
             type="text"
@@ -271,21 +268,19 @@ export default function Step3Apartinator({ data, onChange }: Step3Props) {
             onChange={(e) => onChange('apartinatorCiEliberatDe', e.target.value.toUpperCase())}
             placeholder="SCHPF"
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition uppercase"
-            required
           />
         </div>
 
         {/* Valabil până la */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Valabil până la <span className="text-red-500">*</span>
+            Valabil până la
           </label>
           <input
             type="date"
             value={data.apartinatorCiValabilPana}
             onChange={(e) => onChange('apartinatorCiValabilPana', e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition"
-            required
           />
         </div>
       </div>
