@@ -19,6 +19,7 @@ interface Attendance {
   type: 'check-in' | 'check-out';
   locationId?: string;
   locationName?: string;
+  deviceId?: string;
   timestamp: Date;
   date: string;
 }
@@ -334,6 +335,9 @@ export default function PontajePage() {
                                 <p>⏰ Check-in: {checkIn.timestamp.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}</p>
                                 {checkIn.locationName && (
                                   <p>📍 {checkIn.locationName}</p>
+                                )}
+                                {checkIn.deviceId && (
+                                  <p className="text-xs text-gray-500 font-mono">📱 {checkIn.deviceId.substring(0, 20)}...</p>
                                 )}
                               </div>
                             )}
