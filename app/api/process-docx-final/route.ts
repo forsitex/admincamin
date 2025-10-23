@@ -287,7 +287,7 @@ DOAR JSON, fără text suplimentar!`
     zip.file('word/document.xml', modifiedXml);
     const finalBuffer = zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' });
 
-    return new NextResponse(finalBuffer, {
+    return new NextResponse(finalBuffer as any, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Disposition': `attachment; filename="${file.name.replace('.docx', '')}_completat.docx"`,

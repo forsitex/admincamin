@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, addDoc, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { Clock, LogIn, LogOut, Loader2, AlertCircle, CheckCircle, Building } from 'lucide-react';
 
-export default function PontajPage() {
+function PontajContent() {
   const searchParams = useSearchParams();
-  const locationId = searchParams.get('location');
+  const locationId = searchParams?.get('location') || null;
   
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
@@ -309,5 +309,20 @@ export default function PontajPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PontajPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Se încarcă...</p>
+        </div>
+      </div>
+    }>
+      <PontajContent />
+    </Suspense>
   );
 }
