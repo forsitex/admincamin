@@ -67,69 +67,45 @@ function PontajContent() {
     try {
       const deviceId = getDeviceId();
 
-      // Caută angajatul cu PIN-ul introdus în TOATE organizațiile
-      // (pentru simplitate, vom căuta în prima organizație găsită)
-      const organizationsSnapshot = await getDocs(collection(db, 'organizations'));
-      
-      let employeeFound: any = null;
-      let organizationId: string | null = null;
-      let employeeDocRef: any = null;
+      // Trimite request către API
+      const response = await fetch('/api/pontaj', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pin: pin,
+          deviceId: deviceId,
+          type: type,
+          locationId: locationId,
+        }),
+      });
 
-      for (const orgDoc of organizationsSnapshot.docs) {
-        const employeesRef = collection(db, 'organizations', orgDoc.id, 'employees');
-        const employeesQuery = query(employeesRef, where('pin', '==', pin));
-        const employeesSnapshot = await getDocs(employeesQuery);
+      const data = await response.json();
 
-        if (!employeesSnapshot.empty) {
-          employeeFound = {
-            id: employeesSnapshot.docs[0].id,
-            ...employeesSnapshot.docs[0].data()
-          };
-          organizationId = orgDoc.id;
-          employeeDocRef = employeesSnapshot.docs[0].ref;
-          break;
-        }
-      }
-
-      if (!employeeFound || !organizationId) {
-        setMessage({ type: 'error', text: '❌ PIN incorect! Verifică și încearcă din nou.' });
+      if (!response.ok) {
+        setMessage({ type: 'error', text: data.error || 'Eroare la pontaj' });
         setPin('');
         setLoading(false);
         return;
       }
 
-      // NOTĂ: Nu mai verificăm device-ul în employee
-      // Device-ul va fi salvat doar în pontaje pentru tracking
-      
-      // Salvează pontajul
-      const attendanceRef = collection(db, 'organizations', organizationId, 'attendance');
-      await addDoc(attendanceRef, {
-        employeeId: employeeFound.id,
-        employeeName: employeeFound.name,
-        employeeRole: employeeFound.role,
-        type: type,
-        deviceId: deviceId,
-        locationId: locationId || null,
-        locationName: location?.name || null,
-        timestamp: Timestamp.now(),
-        date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
-      });
-
+      // Success!
       setMessage({ 
         type: 'success', 
-        text: `✅ ${employeeFound.name} - ${type === 'check-in' ? 'Intrat în tură' : 'Ieșit din tură'} cu succes!` 
+        text: data.message
       });
       
       setLastPontaj({
-        name: employeeFound.name,
-        role: employeeFound.role,
+        name: data.employee.name,
+        role: data.employee.role,
         type: type,
-        time: new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })
+        time: data.time
       });
 
       setPin('');
-    } catch (error) {
-      console.error('Error pontaj:', error);
+    } catch (error: any) {
+      console.error('Eroare pontaj:', error);
       setMessage({ type: 'error', text: 'Eroare la salvarea pontajului. Te rugăm să încerci din nou.' });
     } finally {
       setLoading(false);

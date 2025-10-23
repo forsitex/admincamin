@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import { Users, UserPlus, Trash2, Phone, Mail, Clock, Key, ArrowLeft } from 'lucide-react';
+import { Users, UserPlus, Trash2, Phone, Mail, Clock, Key, ArrowLeft, RefreshCw, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 
 interface Employee {
@@ -75,6 +75,69 @@ export default function EmployeesPage() {
     }
   };
 
+  const handleResetDevice = async (employeeId: string, employeeName: string) => {
+    if (!confirm(`Resetezi device-ul pentru "${employeeName}"?\n\nAngajatul va putea ponta de pe un telefon nou la următoarea pontare.`)) {
+      return;
+    }
+
+    try {
+      if (!auth.currentUser) return;
+
+      const response = await fetch('/api/reset-device', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          organizationId: auth.currentUser.uid,
+          employeeId: employeeId,
+          resetAll: false,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        await loadEmployees(auth.currentUser.uid);
+      } else {
+        alert('Eroare: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error resetting device:', error);
+      alert('Eroare la resetarea device-ului.');
+    }
+  };
+
+  const handleResetAllDevices = async () => {
+    if (!confirm('⚠️ ATENȚIE!\n\nResetezi device-ul pentru TOȚI angajații?\n\nFiecare angajat va putea ponta de pe un telefon nou la următoarea pontare.')) {
+      return;
+    }
+
+    try {
+      if (!auth.currentUser) return;
+
+      const response = await fetch('/api/reset-device', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          organizationId: auth.currentUser.uid,
+          resetAll: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        await loadEmployees(auth.currentUser.uid);
+      } else {
+        alert('Eroare: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error resetting all devices:', error);
+      alert('Eroare la resetarea device-urilor.');
+    }
+  };
+
   const getShiftLabel = (shift: string) => {
     switch (shift) {
       case 'morning': return 'Dimineață (06:00-14:00)';
@@ -127,13 +190,22 @@ export default function EmployeesPage() {
               Gestionează angajații și PIN-urile pentru pontaj
             </p>
           </div>
-          <Link
-            href="/employees/add"
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
-          >
-            <UserPlus className="w-5 h-5" />
-            Adaugă Angajat
-          </Link>
+          <div className="flex gap-3">
+            <button
+              onClick={handleResetAllDevices}
+              className="flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-all"
+            >
+              <RefreshCw className="w-5 h-5" />
+              Reset Toate Device-urile
+            </button>
+            <Link
+              href="/employees/add"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+            >
+              <UserPlus className="w-5 h-5" />
+              Adaugă Angajat
+            </Link>
+          </div>
         </div>
 
         {/* Empty State */}
@@ -220,13 +292,22 @@ export default function EmployeesPage() {
                 {/* Device Status */}
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   {employee.deviceId ? (
-                    <div className="flex items-center gap-2 text-xs text-green-600">
-                      <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                      <span>Dispozitiv înregistrat</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs text-green-600">
+                        <Smartphone className="w-4 h-4" />
+                        <span>Dispozitiv înregistrat</span>
+                      </div>
+                      <button
+                        onClick={() => handleResetDevice(employee.id, employee.name)}
+                        className="flex items-center gap-1 px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition font-semibold"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        Reset
+                      </button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      <Smartphone className="w-4 h-4" />
                       <span>Nicio pontare încă</span>
                     </div>
                   )}
