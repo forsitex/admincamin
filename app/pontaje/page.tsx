@@ -7,7 +7,7 @@ import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { 
   Clock, Users, AlertCircle, Calendar, Download, 
-  CheckCircle, XCircle, TrendingUp, Building, Filter, ArrowLeft
+  CheckCircle, XCircle, TrendingUp, Building, Filter, ArrowLeft, Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -66,6 +66,36 @@ export default function PontajePage() {
 
     return () => unsubscribe();
   }, [router]);
+
+  const handleCleanup = async () => {
+    if (!confirm('⚠️ ATENȚIE!\n\nAceastă acțiune va șterge:\n- Toate pontajele\n- Toate alertele de securitate\n- Toate device-urile înregistrate\n\nVrei să continui?')) {
+      return;
+    }
+
+    try {
+      if (!auth.currentUser) return;
+
+      const response = await fetch('/api/cleanup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          organizationId: auth.currentUser.uid,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`${data.message}\n\n📊 Detalii:\n- Pontaje șterse: ${data.details.pontajeSterse}\n- Alerte șterse: ${data.details.alerteSterse}\n- Device-uri resetate: ${data.details.deviceuriResetate}`);
+        await loadData(auth.currentUser.uid);
+      } else {
+        alert('Eroare: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error cleanup:', error);
+      alert('Eroare la curățare.');
+    }
+  };
 
   const loadData = async (userId: string) => {
     try {
@@ -201,14 +231,23 @@ export default function PontajePage() {
         </Link>
 
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3 mb-2">
-            <Clock className="w-10 h-10 text-purple-600" />
-            Dashboard Pontaje
-          </h1>
-          <p className="text-gray-600">
-            Monitorizează prezența angajaților și pontajele în timp real
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+              <Clock className="w-10 h-10 text-purple-600" />
+              Dashboard Pontaje
+            </h1>
+            <p className="text-gray-600">
+              Monitorizează prezența angajaților și pontajele în timp real
+            </p>
+          </div>
+          <button
+            onClick={handleCleanup}
+            className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-all"
+          >
+            <Trash2 className="w-5 h-5" />
+            Curățare Completă
+          </button>
         </div>
 
         {/* Stats Cards */}
