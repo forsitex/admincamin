@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, addDoc, Timestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, Timestamp, doc, getDoc, setDoc } from 'firebase/firestore';
 import { Clock, LogIn, LogOut, Loader2, AlertCircle, CheckCircle, Building } from 'lucide-react';
 
 function PontajContent() {
@@ -98,34 +98,9 @@ function PontajContent() {
         return;
       }
 
-      // Verifică dacă device-ul se potrivește (dacă angajatul are deja un device înregistrat)
-      if (employeeFound.deviceId && employeeFound.deviceId !== deviceId) {
-        // 🚨 TENTATIVĂ DE FRAUDĂ!
-        await addDoc(collection(db, 'organizations', organizationId, 'security_alerts'), {
-          type: 'device_mismatch',
-          employeeId: employeeFound.id,
-          employeeName: employeeFound.name,
-          attemptedDeviceId: deviceId,
-          registeredDeviceId: employeeFound.deviceId,
-          attemptedPin: pin,
-          timestamp: Timestamp.now(),
-          resolved: false
-        });
-
-        setMessage({ 
-          type: 'error', 
-          text: `⚠️ Acest PIN aparține lui ${employeeFound.name}, dar dispozitivul nu se potrivește! Tentativa a fost raportată administratorului.` 
-        });
-        setPin('');
-        setLoading(false);
-        return;
-      }
-
-      // Dacă e prima pontare, salvează device-ul
-      if (!employeeFound.deviceId && employeeDocRef) {
-        await employeeDocRef.update({ deviceId: deviceId });
-      }
-
+      // NOTĂ: Nu mai verificăm device-ul în employee
+      // Device-ul va fi salvat doar în pontaje pentru tracking
+      
       // Salvează pontajul
       const attendanceRef = collection(db, 'organizations', organizationId, 'attendance');
       await addDoc(attendanceRef, {
