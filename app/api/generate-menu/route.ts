@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { openai, checkApiKey } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
+    // Verifică API key la runtime
+    checkApiKey();
     const { ingredients, organizationType } = await request.json();
 
     if (!ingredients?.trim()) {

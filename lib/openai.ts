@@ -7,16 +7,23 @@
 
 import OpenAI from 'openai';
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error(
-    'OPENAI_API_KEY lipsește din variabilele de mediu. ' +
-    'Verifică că ai creat fișierul .env.local cu cheia API.'
-  );
-}
+// La build time, key-ul poate lipsi (va fi setat în Vercel)
+// La runtime, dacă lipsește, API-urile vor returna eroare
+const apiKey = process.env.OPENAI_API_KEY || 'dummy-key-for-build';
 
 export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: apiKey,
 });
+
+// Helper pentru verificare la runtime
+export function checkApiKey() {
+  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'dummy-key-for-build') {
+    throw new Error(
+      'OPENAI_API_KEY lipsește din variabilele de mediu. ' +
+      'Adaugă-l în Vercel Environment Variables.'
+    );
+  }
+}
 
 /**
  * Modele disponibile

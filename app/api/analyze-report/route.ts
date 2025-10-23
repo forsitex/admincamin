@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import PizZip from 'pizzip';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { openai, checkApiKey } from '@/lib/openai';
 
 export async function POST(request: NextRequest) {
   try {
+    // Verifică API key la runtime
+    checkApiKey();
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const organizationType = formData.get('organizationType') as string || 'camin';

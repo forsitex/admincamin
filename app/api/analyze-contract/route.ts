@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { openai, MODELS } from '@/lib/openai';
+import { openai, MODELS, checkApiKey } from '@/lib/openai';
 import { 
   AnalyzeContractRequest, 
   ContractAnalysisResponse,
@@ -16,6 +16,9 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+    // Verifică API key la runtime
+    checkApiKey();
+
     // 1. Parse request body
     const body: AnalyzeContractRequest = await request.json();
     const { pdfBase64, organizationType, templateName } = body;
