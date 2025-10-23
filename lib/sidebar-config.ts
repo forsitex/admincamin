@@ -25,6 +25,8 @@ import {
   DollarSign,
   Settings,
   HelpCircle,
+  UserCog,
+  Clock,
   type LucideIcon
 } from 'lucide-react';
 
@@ -168,6 +170,21 @@ export const getSidebarConfig = (type: OrganizationType): SidebarItem[] => {
             { label: 'Plăți rezidenți', href: '/financiar/payments', badge: 'Soon' },
             { label: 'Facturi', href: '/financiar/invoices', badge: 'Soon' },
             { label: 'Rapoarte financiare', href: '/financiar/reports', badge: 'Soon' }
+          ]
+        },
+        {
+          icon: UserCog,
+          label: 'Angajați',
+          href: '/employees',
+          badge: 'Nou',
+          color: 'text-indigo-600',
+          bgColor: 'bg-indigo-50',
+          hoverColor: 'hover:bg-indigo-100',
+          subItems: [
+            { label: 'Listă angajați', href: '/employees', badge: 'Nou' },
+            { label: 'Adaugă angajat', href: '/employees/add', badge: 'Nou' },
+            { label: 'QR Code Pontaj', href: '/qr-code', badge: 'Nou' },
+            { label: 'Pontaje', href: '/pontaje', badge: 'Soon' }
           ]
         },
         {

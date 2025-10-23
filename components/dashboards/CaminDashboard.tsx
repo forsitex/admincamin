@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Building, Users, Utensils, Pill, FileText, Plus, TrendingUp, Activity } from 'lucide-react';
+import { Building, Users, Utensils, Pill, FileText, Plus, TrendingUp, Activity, QrCode, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -118,7 +118,7 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
       {/* Quick Actions */}
       <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl shadow-lg p-6 text-white">
         <h3 className="text-xl font-bold mb-4">Acțiuni Rapide</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Link
             href="/residents/add"
             className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
@@ -143,6 +143,13 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
           >
             <FileText className="w-6 h-6" />
             <span className="font-semibold">Rapoarte</span>
+          </Link>
+          <Link
+            href="/pontaje"
+            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
+          >
+            <Clock className="w-6 h-6" />
+            <span className="font-semibold">Pontaje</span>
           </Link>
         </div>
       </div>
@@ -179,20 +186,29 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
               <p className="text-gray-600 text-sm mb-1">{location.address}</p>
               <p className="text-gray-500 text-xs mb-4">Capacitate: {location.capacity || 0} locuri</p>
               
-              <div className="flex items-center gap-2">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/camine/${location.id}`}
+                    className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-center font-semibold hover:bg-purple-700 transition"
+                  >
+                    Vezi detalii
+                  </Link>
+                  <button
+                    onClick={() => onDelete(location.id, location.name)}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+                    title="Șterge cămin"
+                  >
+                    ✕
+                  </button>
+                </div>
                 <Link
-                  href={`/camine/${location.id}`}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-center font-semibold hover:bg-purple-700 transition"
+                  href={`/qr-code/${location.id}`}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg font-semibold hover:shadow-lg transition"
                 >
-                  Vezi detalii
+                  <QrCode className="w-4 h-4" />
+                  QR Code Pontaj
                 </Link>
-                <button
-                  onClick={() => onDelete(location.id, location.name)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
-                  title="Șterge cămin"
-                >
-                  ✕
-                </button>
               </div>
             </div>
           ))}
