@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import PizZip from 'pizzip';
-import OpenAI from 'openai';
+import { openai, checkApiKey } from '@/lib/openai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 // ✅ PĂSTRĂM DIACRITICE - Documentele legale necesită caractere corecte
 // function removeDiacritics(str: string): string {
@@ -16,6 +12,8 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
+    // Verifică API key la runtime
+    checkApiKey();
     console.log('🚀 API process-docx-final apelat');
 
     const formData = await request.formData();
