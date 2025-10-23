@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users } from 'lucide-react';
+import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users, FileText, Pencil } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, getDocs } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function CaminDetailsPage() {
   const router = useRouter();
@@ -13,7 +14,9 @@ export default function CaminDetailsPage() {
   const caminId = params.id as string;
 
   const [camin, setCamin] = useState<any>(null);
+  const [residents, setResidents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingResidents, setLoadingResidents] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   
@@ -24,7 +27,17 @@ export default function CaminDetailsPage() {
   });
 
   useEffect(() => {
-    loadCamin();
+    // Așteaptă ca Firebase Auth să se inițializeze
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loadCamin();
+        loadResidents();
+      } else {
+        router.push('/login');
+      }
+    });
+
+    return () => unsubscribe();
   }, [caminId]);
 
   const loadCamin = async () => {
@@ -35,8 +48,15 @@ export default function CaminDetailsPage() {
         return;
       }
 
-      const caminRef = doc(db, 'companies', user.uid, 'camine', caminId);
-      const caminSnap = await getDoc(caminRef);
+      // Încearcă mai întâi structura nouă (organizations/locations)
+      let caminRef = doc(db, 'organizations', user.uid, 'locations', caminId);
+      let caminSnap = await getDoc(caminRef);
+
+      // Dacă nu există, încearcă structura veche (companies/camine)
+      if (!caminSnap.exists()) {
+        caminRef = doc(db, 'companies', user.uid, 'camine', caminId);
+        caminSnap = await getDoc(caminRef);
+      }
 
       if (caminSnap.exists()) {
         const data: any = { id: caminSnap.id, ...caminSnap.data() };
@@ -57,13 +77,75 @@ export default function CaminDetailsPage() {
     }
   };
 
+  const loadResidents = async () => {
+    try {
+      setLoadingResidents(true);
+      const user = auth.currentUser;
+      if (!user) return;
+
+      console.log('🔍 Încărcare rezidenți pentru cămin:', caminId);
+      console.log('👤 User ID:', user.uid);
+
+      let residentsList: any[] = [];
+
+      // Încearcă mai întâi structura nouă (organizations/locations/residents)
+      try {
+        const path1 = `organizations/${user.uid}/locations/${caminId}/residents`;
+        console.log('📍 Încercare încărcare din structura nouă:', path1);
+        const residentsRef1 = collection(db, 'organizations', user.uid, 'locations', caminId, 'residents');
+        const residentsSnap1 = await getDocs(query(residentsRef1));
+        
+        if (residentsSnap1.size > 0) {
+          console.log('✅ Găsiți', residentsSnap1.size, 'rezidenți în structura nouă');
+          residentsList = residentsSnap1.docs.map(doc => ({
+            cnp: doc.id,
+            ...doc.data()
+          }));
+        } else {
+          console.log('⚠️ Nu s-au găsit rezidenți în structura nouă, încerc structura veche...');
+        }
+      } catch (error) {
+        console.log('⚠️ Eroare la încărcare din structura nouă:', error);
+      }
+
+      // Dacă nu găsește în structura nouă, încearcă structura veche
+      if (residentsList.length === 0) {
+        const path2 = `companies/${user.uid}/camine/${caminId}/residents`;
+        console.log('📍 Încărcare din structura veche:', path2);
+        const residentsRef2 = collection(db, 'companies', user.uid, 'camine', caminId, 'residents');
+        const residentsSnap2 = await getDocs(query(residentsRef2));
+        
+        console.log('📊 Număr documente găsite în structura veche:', residentsSnap2.size);
+        residentsList = residentsSnap2.docs.map(doc => ({
+          cnp: doc.id,
+          ...doc.data()
+        }));
+      }
+
+      console.log('✅ Total rezidenți încărcați:', residentsList.length);
+      setResidents(residentsList);
+    } catch (error) {
+      console.error('❌ Error loading residents:', error);
+    } finally {
+      setLoadingResidents(false);
+    }
+  };
+
   const handleSaveReprezentant = async () => {
     setSaving(true);
     try {
       const user = auth.currentUser;
       if (!user) return;
 
-      const caminRef = doc(db, 'companies', user.uid, 'camine', caminId);
+      // Încearcă mai întâi structura nouă (organizations/locations)
+      let caminRef = doc(db, 'organizations', user.uid, 'locations', caminId);
+      let caminSnap = await getDoc(caminRef);
+
+      // Dacă nu există, folosește structura veche (companies/camine)
+      if (!caminSnap.exists()) {
+        caminRef = doc(db, 'companies', user.uid, 'camine', caminId);
+      }
+
       await updateDoc(caminRef, {
         reprezentant: {
           name: editData.reprezentantName,
@@ -278,19 +360,69 @@ export default function CaminDetailsPage() {
             {/* Glow Effect - Permanent */}
             <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 rounded-3xl blur-lg opacity-75 animate-glow"></div>
             <div className="relative z-10">
-            <h2 className="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">Rezidenți</h2>
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                <Users className="w-12 h-12 text-white" />
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Rezidenți ({residents.length})
+                </h2>
+                <Link
+                  href="/residents/add"
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-105 shadow-xl"
+                >
+                  + Adaugă Rezident
+                </Link>
               </div>
-              <p className="text-gray-700 text-lg mb-6 font-medium">Lista rezidenților va fi disponibilă în curând</p>
-              <Link
-                href="/residents/add"
-                className="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-110 shadow-xl"
-              >
-                + Adaugă Rezident
-              </Link>
-            </div>
+
+              {loadingResidents ? (
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <p className="text-gray-600 mt-4">Încărcare rezidenți...</p>
+                </div>
+              ) : residents.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                    <Users className="w-12 h-12 text-white" />
+                  </div>
+                  <p className="text-gray-700 text-lg font-medium">Nu există rezidenți adăugați încă</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {residents.map((resident) => (
+                    <div
+                      key={resident.cnp}
+                      className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition border-2 border-purple-100"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">{resident.beneficiarNumeComplet}</h3>
+                          <p className="text-sm text-gray-600">CNP: {resident.cnp}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/residents/${resident.cnp}/edit`}
+                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-medium hover:shadow-lg transition flex items-center gap-2"
+                          >
+                            <Pencil className="w-4 h-4" />
+                            Editează
+                          </Link>
+                          <Link
+                            href={`/residents/${resident.cnp}/generate-documents`}
+                            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition flex items-center gap-2"
+                          >
+                            <FileText className="w-4 h-4" />
+                            Documente
+                          </Link>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm text-gray-700">
+                        <p><span className="font-medium">Adresă:</span> {resident.beneficiarAdresa}</p>
+                        {resident.beneficiarTelefon && (
+                          <p><span className="font-medium">Telefon:</span> {resident.beneficiarTelefon}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -39,23 +39,43 @@ export default function AddResidentPage() {
       }
 
       try {
-        // Încarcă date companie
-        const companyRef = doc(db, 'companies', currentUser.uid);
-        const companySnap = await getDoc(companyRef);
+        // Încearcă mai întâi structura nouă (organizations)
+        let companyRef = doc(db, 'organizations', currentUser.uid);
+        let companySnap = await getDoc(companyRef);
+        let camineData: any[] = [];
 
         if (companySnap.exists()) {
+          // Structura nouă găsită
           const companyData = companySnap.data();
           setCompany(companyData);
 
-          // Încarcă cămine
-          const camineRef = collection(db, 'companies', currentUser.uid, 'camine');
-          const camineSnap = await getDocs(camineRef);
-          const camineData = camineSnap.docs.map(doc => ({
+          // Încarcă locations (cămine)
+          const locationsRef = collection(db, 'organizations', currentUser.uid, 'locations');
+          const locationsSnap = await getDocs(locationsRef);
+          camineData = locationsSnap.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
           }));
-          setCamine(camineData);
+        } else {
+          // Fallback la structura veche (companies)
+          companyRef = doc(db, 'companies', currentUser.uid);
+          companySnap = await getDoc(companyRef);
+
+          if (companySnap.exists()) {
+            const companyData = companySnap.data();
+            setCompany(companyData);
+
+            // Încarcă cămine din structura veche
+            const camineRef = collection(db, 'companies', currentUser.uid, 'camine');
+            const camineSnap = await getDocs(camineRef);
+            camineData = camineSnap.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+          }
         }
+
+        setCamine(camineData);
       } catch (error) {
         console.error('Error loading data:', error);
         setError('Eroare la încărcarea datelor. Te rugăm să reîncarci pagina.');

@@ -4,9 +4,9 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, FileText, Printer, Download, Home, Loader2 } from 'lucide-react';
-import { getResidentByCnp } from '@/lib/firestore';
-import { Resident } from '@/types/resident';
-import { CAMINE, COMPANIES } from '@/lib/constants';
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 
 interface PDFDocument {
   name: string;
@@ -19,25 +19,105 @@ function SuccessPageContent() {
   const searchParams = useSearchParams();
   const cnp = searchParams.get('cnp');
   
-  const [resident, setResident] = useState<Resident | null>(null);
+  const [resident, setResident] = useState<any | null>(null);
+  const [company, setCompany] = useState<any | null>(null);
+  const [location, setLocation] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [generatedDocs, setGeneratedDocs] = useState<PDFDocument[]>([]);
 
   useEffect(() => {
-    if (cnp) {
-      loadResident(cnp);
-    }
-  }, [cnp]);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        router.push('/login');
+        return;
+      }
+      
+      if (cnp) {
+        await loadResident(currentUser.uid, cnp);
+      }
+    });
 
-  const loadResident = async (cnp: string) => {
+    return () => unsubscribe();
+  }, [cnp, router]);
+
+  const loadResident = async (userId: string, residentCnp: string) => {
     try {
-      // Încercăm să găsim rezidentul în toate căminele
-      for (const camin of CAMINE) {
-        const res = await getResidentByCnp(cnp, camin.id);
-        if (res) {
-          setResident(res);
+      setLoading(true);
+      let foundResident = null;
+      let foundLocation = null;
+      let foundCompany = null;
+      
+      console.log('🔍 Căutare rezident:', residentCnp);
+      console.log('👤 User ID:', userId);
+      
+      // Încearcă structura nouă (organizations/locations/residents)
+      const locationsRef = collection(db, 'organizations', userId, 'locations');
+      const locationsSnap = await getDocs(locationsRef);
+      
+      console.log('📍 Locations găsite:', locationsSnap.size);
+      
+      for (const locationDoc of locationsSnap.docs) {
+        console.log('📂 Verificare location:', locationDoc.id);
+        const residentsRef = collection(db, 'organizations', userId, 'locations', locationDoc.id, 'residents');
+        const residentsSnap = await getDocs(residentsRef);
+        
+        console.log('👥 Rezidenți în location:', residentsSnap.size);
+        residentsSnap.docs.forEach(doc => console.log('  - CNP:', doc.id));
+        
+        const residentDoc = residentsSnap.docs.find(doc => doc.id === residentCnp);
+        if (residentDoc) {
+          console.log('✅ Rezident găsit în structura nouă!');
+          foundResident = { id: residentDoc.id, ...residentDoc.data() };
+          foundLocation = { id: locationDoc.id, ...locationDoc.data() };
+          
+          // Citește și company
+          const orgDoc = await getDoc(doc(db, 'organizations', userId));
+          if (orgDoc.exists()) {
+            foundCompany = orgDoc.data();
+          }
           break;
         }
+      }
+      
+      // Dacă nu găsește, încearcă structura veche (companies/camine/residents)
+      if (!foundResident) {
+        console.log('⚠️ Nu s-a găsit în structura nouă, încerc structura veche...');
+        const camineRef = collection(db, 'companies', userId, 'camine');
+        const camineSnap = await getDocs(camineRef);
+        
+        console.log('🏠 Cămine găsite (vechi):', camineSnap.size);
+        
+        for (const caminDoc of camineSnap.docs) {
+          console.log('📂 Verificare cămin:', caminDoc.id);
+          const residentsRef = collection(db, 'companies', userId, 'camine', caminDoc.id, 'residents');
+          const residentsSnap = await getDocs(residentsRef);
+          
+          console.log('👥 Rezidenți în cămin:', residentsSnap.size);
+          residentsSnap.docs.forEach(doc => console.log('  - CNP:', doc.id));
+          
+          const residentDoc = residentsSnap.docs.find(doc => doc.id === residentCnp);
+          if (residentDoc) {
+            console.log('✅ Rezident găsit în structura veche!');
+            foundResident = { id: residentDoc.id, ...residentDoc.data() };
+            foundLocation = { id: caminDoc.id, ...caminDoc.data() };
+            
+            // Citește și company
+            const companyDoc = await getDoc(doc(db, 'companies', userId));
+            if (companyDoc.exists()) {
+              foundCompany = companyDoc.data();
+            }
+            break;
+          }
+        }
+      }
+      
+      if (foundResident) {
+        console.log('🎉 Rezident încărcat cu succes!');
+        setResident(foundResident);
+        setLocation(foundLocation);
+        setCompany(foundCompany);
+      } else {
+        console.log('❌ Rezident NU a fost găsit nicăieri!');
       }
     } catch (error) {
       console.error('Error loading resident:', error);
@@ -70,9 +150,6 @@ function SuccessPageContent() {
     );
   }
 
-  const company = COMPANIES.find(c => c.cui === resident.companyCui);
-  const camin = CAMINE.find(c => c.id === resident.caminId);
-
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-6 py-12">
@@ -87,7 +164,7 @@ function SuccessPageContent() {
             </h1>
             <p className="text-xl text-gray-600">
               <strong>{resident.beneficiarNumeComplet}</strong> a fost adăugat în{' '}
-              <strong>{camin?.name}</strong>
+              <strong>{location?.name}</strong>
             </p>
           </div>
 
@@ -157,42 +234,104 @@ function SuccessPageContent() {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="mb-6">
-            <button
-              onClick={async () => {
-                if (!resident) return;
-                
-                setLoading(true);
-                try {
-                  const { generateAllPDFsReact } = await import('@/lib/pdf-generator-react');
-                  const documents = await generateAllPDFsReact(resident);
-                  
-                  // Salvează documentele în state pentru vizualizare
-                  setGeneratedDocs(documents);
-                  alert(`✅ ${documents.length} documente generate cu succes!`);
-                } catch (error) {
-                  console.error('Error generating PDFs:', error);
-                  alert('Eroare la generarea documentelor: ' + (error as Error).message);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Se generează documentele...
-                </>
-              ) : (
-                <>
-                  <FileText className="w-5 h-5" />
-                  Generează Contracte
-                </>
-              )}
-            </button>
+          {/* Action Buttons - 2 Opțiuni */}
+          <div className="mb-6 space-y-4">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              Alege cum vrei să generezi documentele:
+            </h3>
+
+            {/* Opțiunea 1: Upload Custom + AI */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-6">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">🤖</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">
+                    Opțiunea 1: Template Custom cu AI
+                  </h4>
+                  <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                    <li>📄 Upload contract propriu (PDF)</li>
+                    <li>🧠 AI detectează câmpurile automat</li>
+                    <li>✨ Completare automată cu date rezident</li>
+                    <li>⚡ Precizie 99%+</li>
+                  </ul>
+                  <button
+                    onClick={() => {
+                      router.push(`/residents/${cnp}/generate-custom`);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition shadow-lg"
+                  >
+                    <FileText className="w-5 h-5" />
+                    Upload & Generează cu AI
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Opțiunea 2: Template-uri Standard */}
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-6">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-2xl">📋</span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">
+                    Opțiunea 2: Template-uri Standard (Ordin 1126-2025)
+                  </h4>
+                  <ul className="text-sm text-gray-600 space-y-1 mb-4">
+                    <li>📑 16 documente pre-configurate</li>
+                    <li>⚡ Generare instant</li>
+                    <li>✅ Conform legislației în vigoare</li>
+                    <li>🔒 Testate și validate</li>
+                  </ul>
+                  <button
+                    onClick={async () => {
+                      if (!resident) return;
+                      
+                      setLoading(true);
+                      try {
+                        const { generateAllPDFsReact } = await import('@/lib/pdf-generator-react');
+                        const documents = await generateAllPDFsReact(resident);
+                        
+                        // Salvează documentele în state pentru vizualizare
+                        setGeneratedDocs(documents);
+                        alert(`✅ ${documents.length} documente generate cu succes!`);
+                      } catch (error) {
+                        console.error('Error generating PDFs:', error);
+                        alert('Eroare la generarea documentelor: ' + (error as Error).message);
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition shadow-lg disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Se generează...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-5 h-5" />
+                        Generează 16 Documente Standard
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Opțiune Skip */}
+            <div className="text-center">
+              <button
+                onClick={() => router.push('/dashboard-new')}
+                className="text-gray-600 hover:text-gray-900 font-medium underline"
+              >
+                ⏭️ Sari - Generez mai târziu
+              </button>
+            </div>
           </div>
 
           {/* Lista documente generate */}

@@ -12,7 +12,7 @@ import {
   Timestamp,
   serverTimestamp
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { Resident } from '@/types/resident';
 
 // ============================================
@@ -47,16 +47,51 @@ export async function createCompany(userId: string, companyName: string, email: 
 // Salvare rezident în Firestore
 export async function saveResident(resident: Resident): Promise<string> {
   try {
-    console.log('📍 Firestore path:', `iEmpathy/${resident.caminId}/residents/${resident.beneficiarCnp}`);
-    const residentRef = doc(db, 'iEmpathy', resident.caminId, 'residents', resident.beneficiarCnp);
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    console.log('💾 SALVARE REZIDENT - START');
+    console.log('👤 User ID:', user.uid);
+    console.log('🏠 Cămin ID:', resident.caminId);
+    console.log('📋 CNP:', resident.beneficiarCnp);
+
+    // Încearcă să salveze în structura nouă (organizations/locations/residents)
+    let savedSuccessfully = false;
     
-    console.log('💾 Salvare date în Firestore...');
-    await setDoc(residentRef, {
-      ...resident,
-      dataInregistrare: Date.now()
-    });
+    try {
+      const path = `organizations/${user.uid}/locations/${resident.caminId}/residents/${resident.beneficiarCnp}`;
+      console.log('📍 Încercare salvare în structura nouă:', path);
+      const residentRef = doc(db, 'organizations', user.uid, 'locations', resident.caminId, 'residents', resident.beneficiarCnp);
+      
+      await setDoc(residentRef, {
+        ...resident,
+        dataInregistrare: Date.now()
+      });
+      
+      console.log('✅ Salvare reușită în structura nouă!');
+      savedSuccessfully = true;
+    } catch (orgError) {
+      console.log('⚠️ Salvare în structura nouă eșuată:', orgError);
+      console.log('🔄 Încerc structura veche...');
+    }
+
+    // Dacă nu reușește, încearcă structura veche (companies/camine/residents)
+    if (!savedSuccessfully) {
+      const path = `companies/${user.uid}/camine/${resident.caminId}/residents/${resident.beneficiarCnp}`;
+      console.log('📍 Încercare salvare în structura veche:', path);
+      const residentRef = doc(db, 'companies', user.uid, 'camine', resident.caminId, 'residents', resident.beneficiarCnp);
+      
+      await setDoc(residentRef, {
+        ...resident,
+        dataInregistrare: Date.now()
+      });
+      
+      console.log('✅ Salvare reușită în structura veche!');
+      console.log('📍 PATH FINAL:', path);
+    }
     
-    console.log('✅ Salvare reușită!');
     return resident.beneficiarCnp;
   } catch (error) {
     console.error('❌ Error saving resident:', error);

@@ -21,10 +21,20 @@ import {
   Sparkles,
   Star,
   ClipboardList,
+  Building,
+  DollarSign,
+  Settings,
+  HelpCircle,
   type LucideIcon
 } from 'lucide-react';
 
 export type OrganizationType = 'camin' | 'gradinita' | 'spital' | 'hotel';
+
+export interface SidebarSubItem {
+  label: string;
+  href: string;
+  badge?: 'Nou' | 'Soon';
+}
 
 export interface SidebarItem {
   icon: LucideIcon;
@@ -34,19 +44,12 @@ export interface SidebarItem {
   color: string;
   bgColor: string;
   hoverColor: string;
+  subItems?: SidebarSubItem[];
 }
 
 export const getSidebarConfig = (type: OrganizationType): SidebarItem[] => {
   // Itemuri comune pentru toate tipurile
   const commonItems: SidebarItem[] = [
-    {
-      icon: Home,
-      label: 'Acasă',
-      href: '/',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      hoverColor: 'hover:bg-blue-100'
-    },
     {
       icon: LayoutDashboard,
       label: 'Dashboard',
@@ -57,12 +60,42 @@ export const getSidebarConfig = (type: OrganizationType): SidebarItem[] => {
     }
   ];
 
+  const settingsItems: SidebarItem[] = [
+    {
+      icon: Settings,
+      label: 'Setări',
+      href: '/settings',
+      badge: 'Soon',
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50',
+      hoverColor: 'hover:bg-gray-100',
+      subItems: [
+        { label: 'Profil organizație', href: '/settings/profile', badge: 'Soon' },
+        { label: 'Utilizatori/Personal', href: '/settings/users', badge: 'Soon' },
+        { label: 'Preferințe', href: '/settings/preferences', badge: 'Soon' }
+      ]
+    },
+    {
+      icon: HelpCircle,
+      label: 'Suport',
+      href: '/support',
+      badge: 'Soon',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      hoverColor: 'hover:bg-blue-100',
+      subItems: [
+        { label: 'Help & Support', href: '/support/help', badge: 'Soon' },
+        { label: 'Documentație', href: '/support/docs', badge: 'Soon' }
+      ]
+    }
+  ];
+
   const aiItems: SidebarItem[] = [
     {
       icon: Brain,
       label: 'Analiză AI',
       href: '/ai-analysis',
-      badge: 'Nou',
+      badge: 'Soon',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
       hoverColor: 'hover:bg-purple-100'
@@ -71,7 +104,7 @@ export const getSidebarConfig = (type: OrganizationType): SidebarItem[] => {
       icon: Bot,
       label: 'Asistent AI',
       href: '/ai-assistant',
-      badge: 'Nou',
+      badge: 'Soon',
       color: 'text-pink-600',
       bgColor: 'bg-pink-50',
       hoverColor: 'hover:bg-pink-100'
@@ -83,12 +116,59 @@ export const getSidebarConfig = (type: OrganizationType): SidebarItem[] => {
       return [
         ...commonItems,
         {
+          icon: Building,
+          label: 'Căminele Mele',
+          href: '/camine',
+          badge: 'Soon',
+          color: 'text-purple-600',
+          bgColor: 'bg-purple-50',
+          hoverColor: 'hover:bg-purple-100',
+          subItems: [
+            { label: 'Listă cămine', href: '/camine', badge: 'Soon' },
+            { label: 'Adaugă cămin', href: '/camine/add' }
+          ]
+        },
+        {
           icon: Users,
-          label: 'Rezidenți',
+          label: 'Toți Rezidenții',
           href: '/residents',
+          badge: 'Soon',
           color: 'text-green-600',
           bgColor: 'bg-green-50',
-          hoverColor: 'hover:bg-green-100'
+          hoverColor: 'hover:bg-green-100',
+          subItems: [
+            { label: 'Vizualizare centralizată', href: '/residents', badge: 'Soon' },
+            { label: 'Filtrare & Căutare', href: '/residents/search', badge: 'Soon' },
+            { label: 'Export date', href: '/residents/export', badge: 'Soon' }
+          ]
+        },
+        {
+          icon: Calendar,
+          label: 'Calendar',
+          href: '/calendar',
+          badge: 'Soon',
+          color: 'text-blue-600',
+          bgColor: 'bg-blue-50',
+          hoverColor: 'hover:bg-blue-100',
+          subItems: [
+            { label: 'Vizite medicale', href: '/calendar/medical', badge: 'Soon' },
+            { label: 'Activități planificate', href: '/calendar/activities', badge: 'Soon' },
+            { label: 'Zile de naștere', href: '/calendar/birthdays', badge: 'Soon' }
+          ]
+        },
+        {
+          icon: DollarSign,
+          label: 'Financiar',
+          href: '/financiar',
+          badge: 'Soon',
+          color: 'text-green-600',
+          bgColor: 'bg-green-50',
+          hoverColor: 'hover:bg-green-100',
+          subItems: [
+            { label: 'Plăți rezidenți', href: '/financiar/payments', badge: 'Soon' },
+            { label: 'Facturi', href: '/financiar/invoices', badge: 'Soon' },
+            { label: 'Rapoarte financiare', href: '/financiar/reports', badge: 'Soon' }
+          ]
         },
         {
           icon: Utensils,
@@ -111,8 +191,8 @@ export const getSidebarConfig = (type: OrganizationType): SidebarItem[] => {
         {
           icon: FileText,
           label: 'Rapoarte',
-          href: '/reports',
-          badge: 'Soon',
+          href: '/rapoarte',
+          badge: 'Nou',
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
           hoverColor: 'hover:bg-blue-100'
@@ -135,7 +215,8 @@ export const getSidebarConfig = (type: OrganizationType): SidebarItem[] => {
           bgColor: 'bg-purple-50',
           hoverColor: 'hover:bg-purple-100'
         },
-        ...aiItems
+        ...aiItems,
+        ...settingsItems
       ];
 
     case 'gradinita':

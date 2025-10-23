@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Building, Baby, Palette, Calendar, Users, Plus, TrendingUp, Activity } from 'lucide-react';
+import { Building, Baby, Palette, Calendar, Users, Plus, TrendingUp, Activity, Utensils } from 'lucide-react';
 
 interface GradinitaDashboardProps {
   locations: any[];

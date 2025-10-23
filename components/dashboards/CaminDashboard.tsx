@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import { Building, Users, Utensils, Pill, FileText, Plus, TrendingUp, Activity } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { auth, db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 interface CaminDashboardProps {
   locations: any[];
@@ -7,9 +10,53 @@ interface CaminDashboardProps {
 }
 
 export default function CaminDashboard({ locations, onDelete }: CaminDashboardProps) {
+  const [totalResidents, setTotalResidents] = useState(0);
+  const [loading, setLoading] = useState(true);
+
   // Calculează statistici
   const totalLocations = locations.length;
   const totalCapacity = locations.reduce((sum, loc) => sum + (loc.capacity || 0), 0);
+  const occupancyRate = totalCapacity > 0 ? Math.round((totalResidents / totalCapacity) * 100) : 0;
+
+  useEffect(() => {
+    const loadResidents = async () => {
+      if (!auth.currentUser || locations.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        let count = 0;
+
+        // Numără rezidenții din fiecare cămin
+        for (const location of locations) {
+          try {
+            // Încearcă structura nouă: organizations/{userId}/locations/{locationId}/residents
+            const residentsRef = collection(db, 'organizations', auth.currentUser.uid, 'locations', location.id, 'residents');
+            const residentsSnap = await getDocs(residentsRef);
+            count += residentsSnap.size;
+          } catch {
+            // Încearcă structura veche: companies/{userId}/camine/{caminId}/residents
+            try {
+              const residentsRef = collection(db, 'companies', auth.currentUser.uid, 'camine', location.id, 'residents');
+              const residentsSnap = await getDocs(residentsRef);
+              count += residentsSnap.size;
+            } catch (error) {
+              console.log(`Nu s-au găsit rezidenți pentru ${location.name}`);
+            }
+          }
+        }
+
+        setTotalResidents(count);
+      } catch (error) {
+        console.error('Error loading residents:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadResidents();
+  }, [locations]);
   
   return (
     <div className="space-y-6">
@@ -43,8 +90,9 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 font-medium">Rezidenți Activi</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">0</p>
-              <p className="text-xs text-gray-500 mt-1">Soon</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">
+                {loading ? '...' : totalResidents}
+              </p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <Activity className="w-6 h-6 text-orange-600" />
@@ -56,8 +104,9 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 font-medium">Ocupare</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">0%</p>
-              <p className="text-xs text-gray-500 mt-1">Soon</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">
+                {loading ? '...' : `${occupancyRate}%`}
+              </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-blue-600" />
@@ -84,15 +133,12 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
             <Utensils className="w-6 h-6" />
             <span className="font-semibold">Meniu AI</span>
           </Link>
-          <Link
-            href="/medications"
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
-          >
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 opacity-60 cursor-not-allowed flex items-center gap-3">
             <Pill className="w-6 h-6" />
-            <span className="font-semibold">Medicamente</span>
-          </Link>
+            <span className="font-semibold">Medicamente (în curând)</span>
+          </div>
           <Link
-            href="/reports"
+            href="/rapoarte"
             className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
           >
             <FileText className="w-6 h-6" />
