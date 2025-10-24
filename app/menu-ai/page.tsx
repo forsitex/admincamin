@@ -24,6 +24,10 @@ import {
 interface MenuItem {
   name: string;
   ingredients: string[];
+  ingredientsWithQuantities?: Array<{
+    name: string;
+    quantity: string;
+  }>;
   calories: number;
   protein: number;
   carbs: number;
@@ -307,7 +311,21 @@ export default function MenuAIPage() {
                           🌅 Mic Dejun
                         </h4>
                         <p className="font-semibold text-gray-800 mb-2">{menu.micDejun.name}</p>
-                        <p className="text-xs text-gray-600 mb-2">{menu.micDejun.ingredients.join(', ')}</p>
+                        
+                        {/* Cantități ingrediente */}
+                        {menu.micDejun.ingredientsWithQuantities && menu.micDejun.ingredientsWithQuantities.length > 0 ? (
+                          <div className="mb-3 space-y-1">
+                            <p className="text-xs font-semibold text-gray-700 mb-1">📋 Cantități necesare:</p>
+                            {menu.micDejun.ingredientsWithQuantities.map((ing: any, i: number) => (
+                              <div key={i} className="text-xs text-gray-600 bg-white rounded px-2 py-1">
+                                • <strong>{ing.name}:</strong> {ing.quantity}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-600 mb-2">{menu.micDejun.ingredients.join(', ')}</p>
+                        )}
+                        
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div className="bg-white rounded px-2 py-1">
                             <span className="text-gray-500">Cal:</span> <strong className="text-gray-900">{menu.micDejun.calories}</strong>
@@ -324,7 +342,21 @@ export default function MenuAIPage() {
                           ☀️ Prânz
                         </h4>
                         <p className="font-semibold text-gray-800 mb-2">{menu.pranz.name}</p>
-                        <p className="text-xs text-gray-600 mb-2">{menu.pranz.ingredients.join(', ')}</p>
+                        
+                        {/* Cantități ingrediente */}
+                        {menu.pranz.ingredientsWithQuantities && menu.pranz.ingredientsWithQuantities.length > 0 ? (
+                          <div className="mb-3 space-y-1">
+                            <p className="text-xs font-semibold text-gray-700 mb-1">📋 Cantități necesare:</p>
+                            {menu.pranz.ingredientsWithQuantities.map((ing: any, i: number) => (
+                              <div key={i} className="text-xs text-gray-600 bg-white rounded px-2 py-1">
+                                • <strong>{ing.name}:</strong> {ing.quantity}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-600 mb-2">{menu.pranz.ingredients.join(', ')}</p>
+                        )}
+                        
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div className="bg-white rounded px-2 py-1">
                             <span className="text-gray-500">Cal:</span> <strong className="text-gray-900">{menu.pranz.calories}</strong>
@@ -341,7 +373,21 @@ export default function MenuAIPage() {
                           🌙 Cină
                         </h4>
                         <p className="font-semibold text-gray-800 mb-2">{menu.cina.name}</p>
-                        <p className="text-xs text-gray-600 mb-2">{menu.cina.ingredients.join(', ')}</p>
+                        
+                        {/* Cantități ingrediente */}
+                        {menu.cina.ingredientsWithQuantities && menu.cina.ingredientsWithQuantities.length > 0 ? (
+                          <div className="mb-3 space-y-1">
+                            <p className="text-xs font-semibold text-gray-700 mb-1">📋 Cantități necesare:</p>
+                            {menu.cina.ingredientsWithQuantities.map((ing: any, i: number) => (
+                              <div key={i} className="text-xs text-gray-600 bg-white rounded px-2 py-1">
+                                • <strong>{ing.name}:</strong> {ing.quantity}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-600 mb-2">{menu.cina.ingredients.join(', ')}</p>
+                        )}
+                        
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div className="bg-white rounded px-2 py-1">
                             <span className="text-gray-500">Cal:</span> <strong className="text-gray-900">{menu.cina.calories}</strong>

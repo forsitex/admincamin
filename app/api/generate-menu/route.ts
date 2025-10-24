@@ -57,11 +57,17 @@ function getMenuPrompt(userRequest: string, organizationType: string): string {
     hotel: 'hotel/pensiune',
   }[organizationType] || 'organizație';
 
+  // Extrage numărul de porții din cerere (default: 1)
+  const portionsMatch = userRequest.match(/(\d+)\s*(?:portii|porții|persoane)/i);
+  const portions = portionsMatch ? parseInt(portionsMatch[1]) : 1;
+
   return `
 Ești un nutriționist expert și chef profesionist pentru o ${context}.
 
 CEREREA UTILIZATORULUI:
 ${userRequest}
+
+NUMĂR PORȚII DETECTAT: ${portions} porții
 
 INSTRUCȚIUNI:
 1. Analizează cererea utilizatorului și identifică:
@@ -133,6 +139,11 @@ RĂSPUNDE ÎN FORMAT JSON CU URMĂTOAREA STRUCTURĂ EXACTĂ:
       "micDejun": {
         "name": "Nume preparat",
         "ingredients": ["ingredient1", "ingredient2", "ingredient3"],
+        "ingredientsWithQuantities": [
+          { "name": "ingredient1", "quantity": "500g" },
+          { "name": "ingredient2", "quantity": "300ml" },
+          { "name": "ingredient3", "quantity": "200g" }
+        ],
         "calories": 400,
         "protein": 20,
         "carbs": 45,
@@ -142,6 +153,11 @@ RĂSPUNDE ÎN FORMAT JSON CU URMĂTOAREA STRUCTURĂ EXACTĂ:
       "pranz": {
         "name": "Nume preparat",
         "ingredients": ["ingredient1", "ingredient2", "ingredient3"],
+        "ingredientsWithQuantities": [
+          { "name": "ingredient1", "quantity": "800g" },
+          { "name": "ingredient2", "quantity": "400g" },
+          { "name": "ingredient3", "quantity": "300g" }
+        ],
         "calories": 600,
         "protein": 35,
         "carbs": 60,
@@ -151,6 +167,11 @@ RĂSPUNDE ÎN FORMAT JSON CU URMĂTOAREA STRUCTURĂ EXACTĂ:
       "cina": {
         "name": "Nume preparat",
         "ingredients": ["ingredient1", "ingredient2", "ingredient3"],
+        "ingredientsWithQuantities": [
+          { "name": "ingredient1", "quantity": "600g" },
+          { "name": "ingredient2", "quantity": "350g" },
+          { "name": "ingredient3", "quantity": "250g" }
+        ],
         "calories": 500,
         "protein": 25,
         "carbs": 50,
@@ -230,17 +251,28 @@ REGULI IMPORTANTE:
 2. **Fiecare meniu trebuie să aibă 3 mese complete**: mic dejun, prânz, cină
 3. **Calculează corect caloriile și macronutrienții** pentru fiecare masă
 4. **Respectă restricțiile dietetice** pentru fiecare tip de meniu
-5. **Preparatele trebuie să fie realiste și ușor de realizat**
-6. **Variază preparatele** între diferitele tipuri de meniu
-7. **Pentru meniul carne**, asigură-te că diferențiezi clar cantitățile de proteine
-8. **Modul de preparare** trebuie să fie concis (max 3 propoziții)
-9. **Ingredientele** trebuie listate exact ca în lista disponibilă
-10. **Totalul caloriilor pe zi** trebuie să respecte intervalele specificate
+5. **FOARTE IMPORTANT: Calculează cantitățile EXACTE pentru ${portions} porții**
+   - Fiecare ingredient trebuie să aibă cantitatea specificată (ex: "500g", "300ml", "2 bucăți")
+   - Cantitățile trebuie să fie realiste și scalate corect pentru numărul de porții
+   - Include TOATE ingredientele cu cantități în array-ul "ingredientsWithQuantities"
+6. **Preparatele trebuie să fie realiste și ușor de realizat**
+7. **Variază preparatele** între diferitele tipuri de meniu
+8. **Pentru meniul carne**, asigură-te că diferențiezi clar cantitățile de proteine
+9. **Modul de preparare** trebuie să fie concis (max 3 propoziții)
+10. **Ingredientele** trebuie listate exact ca în lista disponibilă
+11. **Totalul caloriilor pe zi** trebuie să respecte intervalele specificate
 
-EXEMPLU DE PREPARAT:
+EXEMPLU DE PREPARAT PENTRU ${portions} PORȚII:
 {
   "name": "Omletă cu legume și pâine integrală",
   "ingredients": ["ouă", "roșii", "ceapă", "pâine integrală", "ulei de măsline"],
+  "ingredientsWithQuantities": [
+    { "name": "ouă", "quantity": "${portions * 40}g (${portions * 2} ouă)" },
+    { "name": "roșii", "quantity": "${portions * 100}g" },
+    { "name": "ceapă", "quantity": "${portions * 50}g" },
+    { "name": "pâine integrală", "quantity": "${portions * 60}g (${portions * 2} felii)" },
+    { "name": "ulei de măsline", "quantity": "${portions * 10}ml" }
+  ],
   "calories": 380,
   "protein": 22,
   "carbs": 35,
