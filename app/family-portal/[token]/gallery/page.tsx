@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy, where, getDocs as getDocsFirestore } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, collectionGroup } from 'firebase/firestore';
 import { Image as ImageIcon, Loader2, Download, Calendar, Tag } from 'lucide-react';
 import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
@@ -46,16 +46,87 @@ export default function FamilyGalleryPage() {
   const loadGallery = async () => {
     try {
       setLoading(true);
+      setError('');
       
-      // Pentru demo, afișăm un mesaj
-      // În producție, ar trebui să folosim Cloud Functions pentru căutare optimizată
-      setError('Funcționalitate în dezvoltare. Necesită Cloud Functions pentru căutare optimizată după token.');
+      console.log('🔍 Căutare acces pentru token:', token);
       
-      // TODO: Implementare completă cu Cloud Functions
+      // Căutăm în toate companiile după token
+      const companiesRef = collection(db, 'companies');
+      const companiesSnap = await getDocs(companiesRef);
       
+      let foundAccess = false;
+      let foundPhotos: Photo[] = [];
+      let foundResidentName = '';
+      
+      // Iterăm prin fiecare companie
+      for (const companyDoc of companiesSnap.docs) {
+        const companyId = companyDoc.id;
+        
+        // Iterăm prin căminele companiei
+        const camineRef = collection(db, 'companies', companyId, 'camine');
+        const camineSnap = await getDocs(camineRef);
+        
+        for (const caminDoc of camineSnap.docs) {
+          const caminId = caminDoc.id;
+          
+          // Iterăm prin rezidenții căminului
+          const residentsRef = collection(db, 'companies', companyId, 'camine', caminId, 'residents');
+          const residentsSnap = await getDocs(residentsRef);
+          
+          for (const residentDoc of residentsSnap.docs) {
+            const residentCnp = residentDoc.id;
+            
+            // Verificăm dacă există familyAccess cu token-ul nostru
+            const accessRef = collection(db, 'companies', companyId, 'camine', caminId, 'residents', residentCnp, 'familyAccess');
+            const accessSnap = await getDocs(accessRef);
+            
+            for (const accessDoc of accessSnap.docs) {
+              const accessData = accessDoc.data();
+              
+              if (accessData.accessToken === token) {
+                // GĂSIT! Încărcăm galeria
+                foundAccess = true;
+                foundResidentName = accessData.residentName || residentDoc.data().numeComplet || 'Rezident';
+                
+                console.log('✅ Acces găsit pentru:', foundResidentName);
+                
+                // Încărcăm pozele
+                const galleryRef = collection(db, 'companies', companyId, 'camine', caminId, 'residents', residentCnp, 'gallery');
+                const galleryQuery = query(galleryRef, orderBy('uploadedAt', 'desc'));
+                const gallerySnap = await getDocs(galleryQuery);
+                
+                foundPhotos = gallerySnap.docs.map(doc => ({
+                  id: doc.id,
+                  ...doc.data()
+                })) as Photo[];
+                
+                break;
+              }
+            }
+            
+            if (foundAccess) break;
+          }
+          
+          if (foundAccess) break;
+        }
+        
+        if (foundAccess) break;
+      }
+      
+      if (!foundAccess) {
+        setError('Token invalid sau expirat. Vă rugăm contactați administratorul.');
+        setLoading(false);
+        return;
+      }
+      
+      setResidentName(foundResidentName);
+      setPhotos(foundPhotos);
       setLoading(false);
+      
+      console.log('📸 Încărcat', foundPhotos.length, 'poze');
+      
     } catch (error: any) {
-      console.error('Error loading gallery:', error);
+      console.error('❌ Error loading gallery:', error);
       setError('Eroare la încărcare galerie: ' + error.message);
       setLoading(false);
     }
