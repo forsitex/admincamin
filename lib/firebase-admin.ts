@@ -8,33 +8,30 @@ import * as fs from 'fs';
 let app;
 if (getApps().length === 0) {
   try {
-    // Încercăm să citim service account din fișier
     const serviceAccountPath = path.join(process.cwd(), 'firebase-service-account.json');
     
     if (fs.existsSync(serviceAccountPath)) {
       const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-      app = initializeApp({
-        credential: cert(serviceAccount)
-      });
+      app = initializeApp({ credential: cert(serviceAccount) });
       console.log('✅ Firebase Admin initialized with service account file');
+    } else if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      app = initializeApp({ credential: cert(serviceAccount) });
+      console.log('✅ Firebase Admin initialized with JSON env var');
+    } else if (process.env.FIREBASE_PROJECT_ID) {
+      app = initializeApp({
+        credential: cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        })
+      });
+      console.log('✅ Firebase Admin initialized with individual env vars');
     } else {
-      // Fallback: încercăm din environment variable
-      const serviceAccountEnv = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-      
-      if (serviceAccountEnv) {
-        const serviceAccount = JSON.parse(serviceAccountEnv);
-        app = initializeApp({
-          credential: cert(serviceAccount)
-        });
-        console.log('✅ Firebase Admin initialized with environment variable');
-      } else {
-        // Ultimul fallback: Application Default Credentials
-        app = initializeApp();
-        console.log('⚠️ Firebase Admin initialized with default credentials');
-      }
+      throw new Error('Firebase credentials not found!');
     }
   } catch (error) {
-    console.error('❌ Firebase Admin initialization error:', error);
+    console.error('❌ Firebase Admin error:', error);
     throw error;
   }
 } else {
