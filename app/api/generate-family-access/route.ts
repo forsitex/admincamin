@@ -15,10 +15,7 @@ export async function POST(request: NextRequest) {
 
     console.log('🔐 Generare acces pentru:', apartinatorEmail);
 
-    // Generare token unic (64 caractere)
-    const accessToken = crypto.randomBytes(32).toString('hex');
-
-    // Salvare în Firestore (structura VECHE - companies/camine) - ADMIN SDK
+    // Verificăm dacă există deja un token
     const accessRef = adminDb
       .collection('companies')
       .doc(userId)
@@ -29,13 +26,27 @@ export async function POST(request: NextRequest) {
       .collection('familyAccess')
       .doc('main');
 
-    await accessRef.set({
-      email: apartinatorEmail,
-      accessToken,
-      residentName: residentName || '',
-      createdAt: FieldValue.serverTimestamp(),
-      lastAccess: null,
-    });
+    const existingAccess = await accessRef.get();
+    
+    let accessToken: string;
+    
+    if (existingAccess.exists && existingAccess.data()?.accessToken) {
+      // Folosim token-ul existent
+      accessToken = existingAccess.data()!.accessToken;
+      console.log('✅ Token existent găsit, reutilizare');
+    } else {
+      // Generăm token nou doar dacă nu există
+      accessToken = crypto.randomBytes(32).toString('hex');
+      console.log('🆕 Token nou generat');
+      
+      await accessRef.set({
+        email: apartinatorEmail,
+        accessToken,
+        residentName: residentName || '',
+        createdAt: FieldValue.serverTimestamp(),
+        lastAccess: null,
+      });
+    }
 
     // Generare link
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
