@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users, FileText, Pencil } from 'lucide-react';
+import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users, FileText, Pencil, Camera } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, collection, query, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -399,16 +399,23 @@ export default function CaminDetailsPage() {
                         <div className="flex gap-2">
                           <Link
                             href={`/residents/${resident.cnp}/edit`}
-                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-medium hover:shadow-lg transition flex items-center gap-2"
+                            className="px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg text-sm font-medium hover:shadow-lg transition flex items-center gap-1.5"
                           >
-                            <Pencil className="w-4 h-4" />
+                            <Pencil className="w-3.5 h-3.5" />
                             Editează
                           </Link>
                           <Link
-                            href={`/residents/${resident.cnp}/generate-documents`}
-                            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition flex items-center gap-2"
+                            href={`/residents/${resident.cnp}/gallery?caminId=${caminId}`}
+                            className="px-3 py-2 bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-lg text-sm font-medium hover:shadow-lg transition flex items-center gap-1.5"
                           >
-                            <FileText className="w-4 h-4" />
+                            <Camera className="w-3.5 h-3.5" />
+                            Galerie
+                          </Link>
+                          <Link
+                            href={`/residents/${resident.cnp}/generate-documents`}
+                            className="px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:shadow-lg transition flex items-center gap-1.5"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
                             Documente
                           </Link>
                         </div>
