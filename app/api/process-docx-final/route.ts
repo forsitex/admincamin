@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import PizZip from 'pizzip';
-import { openai, checkApiKey } from '@/lib/openai';
+import { anthropic, checkAnthropicApiKey, CLAUDE_MODELS } from '@/lib/anthropic';
+
+// Helper pentru a evita probleme cu caractere speciale
+function safeStringReplace(text: string, searchValue: string, replaceValue: string): string {
+  // Escapăm caracterele speciale în searchValue
+  const escapedSearch = searchValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(escapedSearch);
+  return text.replace(regex, replaceValue);
+}
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -13,8 +21,8 @@ export const maxDuration = 60;
 export async function POST(request: NextRequest) {
   try {
     // Verifică API key la runtime
-    checkApiKey();
-    console.log('🚀 API process-docx-final apelat');
+    checkAnthropicApiKey();
+    console.log('🚀 API process-docx-final apelat (folosind Claude 3.5 Sonnet)');
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -145,93 +153,231 @@ export async function POST(request: NextRequest) {
       companyCui: residentData.companyCui || '',
     };
 
-    // ✅ Trimitem la GPT - TOATE câmpurile (nu doar 25!)
-    console.log('🤖 GPT-4o analizează TOATE câmpurile...');
+    // ✅ Trimitem la Claude 3.5 Sonnet - TOATE câmpurile (nu doar 25!)
+    console.log('🤖 Claude 3.5 Sonnet analizează TOATE câmpurile...');
     
     // Pregătim prompt cu TOATE matches din TEXT
     const promptMatches = textPuncteMatches.map((m, i) => 
       `${i + 1}. Context înainte: "${m.contextBefore}" | Puncte: [${m.puncte.length}] | Context după: "${m.contextAfter}"`
     ).join('\n');
 
-    const aiResponse = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [{
-        role: 'system',
-        content: `Ești expert în completare documente legale românești pentru cămine de bătrâni.
+    const systemPrompt = `Ești expert în completare documente legale românești pentru cămine de bătrâni.
 
-MISIUNEA TA: Analizează FIECARE secvență de puncte și identifică CE VARIABILĂ EXACTĂ trebuie pusă acolo.
+🎯 MISIUNEA TA PRINCIPALĂ:
+Analizează ETICHETELE din document (textul ÎNAINTE de puncte), NU punctele în sine!
 
-VARIABILE DISPONIBILE (cu valori reale):
-${Object.entries(vars).map(([k, v]) => `- ${k}: "${v}"`).join('\n')}
+EXEMPLU:
+❌ GREȘIT: "Găsesc puncte: ......... și ghicesc ce înseamnă"
+✅ CORECT: "Citesc eticheta: 'CNP nr.' → înțeleg că se cere CNP → caut în date → găsesc 1770203036053"
 
-REGULI STRICTE (urmează EXACT ordinea din document):
+📊 DATELE DISPONIBILE:
+${Object.entries(vars).map(([k, v]) => `${k}: "${v}"`).join('\n')}
 
-📋 SECȚIUNEA 1.2 - BENEFICIAR (prima persoană menționată):
-1. "Domnul/Doamna" + puncte → beneficiarNumeComplet (NUME COMPLET)
-2. "cu domiciliul în" + puncte → beneficiarAdresa (ADRESA COMPLETĂ)
-3. "str." + puncte → beneficiarAdresa (doar dacă e separat)
-4. "nr." + puncte (după stradă) → parte din beneficiarAdresa
-5. "județul/sectorul" + puncte → parte din beneficiarAdresa
-6. "CNP nr." + puncte → beneficiarCnp (13 CIFRE!)
-7. "contul nr." + puncte → SKIP (nu avem această variabilă)
-8. "B.I./C.I. seria" + puncte → beneficiarCiSerie (2-3 LITERE!)
-9. "nr." + puncte (după seria CI) → beneficiarCiNumar (6-7 CIFRE!)
-10. "având cu" + puncte → SKIP (text de legătură)
+📖 DICȚIONAR DE ETICHETE (ce înseamnă fiecare etichetă):
 
-📋 SECȚIUNEA 1.3 - APARȚINĂTOR (a doua persoană):
-11. "Domnul/doamna" + puncte (în 1.3) → apartinatorNumeComplet
-12. "domiciliat/domiciliată în localitatea" + puncte → apartinatorAdresa
-13. "str." + puncte (în 1.3) → parte din apartinatorAdresa
-14. "nr." + puncte (în 1.3, după stradă) → parte din apartinatorAdresa
-15. "județul/sectorul" + puncte (în 1.3) → parte din apartinatorAdresa
-16. "B.I./C.I. seria" + puncte (în 1.3) → apartinatorCiSerie
-17. "nr." + puncte (în 1.3, după CI seria) → apartinatorCiNumar
-18. "eliberat/eliberată la data de" + puncte → apartinatorCiEliberatData
-19. "de Secția de poliție" + puncte → apartinatorCiEliberatDe
+**ETICHETE PENTRU NUME:**
+- "Domnul/Doamna" → beneficiarNumeComplet (prima apariție)
+- "Domnul/doamna" → apartinatorNumeComplet (a doua apariție)
+- "Nume și Prenume:" → beneficiarNumeComplet
+- "Nume:" → poate fi beneficiar sau apartinator (verifică secțiunea)
 
-📋 SECȚIUNEA 2 - CONTRACT:
-20. "Cererea de acordare" + "nr." + puncte → numarDosar
-21. "Planul individualizat" + "nr." + puncte → SKIP
-22. "cost" / "tarif" + puncte → costServiciu
-23. "data" + puncte → dataInceputContract
+**ETICHETE PENTRU CNP:**
+- "CNP:" sau "CNP nr." → beneficiarCnp SAU apartinatorCnp (13 CIFRE!)
+- ⚠️ NU confunda cu CI număr (6-7 cifre)!
 
-⚠️ ATENȚIE LA CONFUZII FRECVENTE:
-- CNP = 13 cifre (ex: 1770203036053) ≠ CI număr (6-7 cifre)
-- CI Serie = 2-3 LITERE (ex: ZE, TT) ≠ CI număr
-- "nr." poate însemna: număr stradă, CI număr, CNP, cont, dosar
-  → Verifică contextul EXACT înainte!
-- Județul/sectorul = parte din adresă, NU variabilă separată
+**ETICHETE PENTRU ADRESĂ:**
+- "cu domiciliul în" → beneficiarAdresa (prima apariție)
+- "domiciliat în localitatea" → apartinatorAdresa (a doua apariție)
+- "Adresă:" sau "Adresa:" → verifică secțiunea (beneficiar sau aparținător)
 
-🎯 ALGORITM DE DECIZIE:
-1. Citește contextul înainte (50 caractere)
-2. Identifică secțiunea (1.2 = beneficiar, 1.3 = aparținător)
-3. Identifică tipul câmpului (nume, CNP, adresă, CI, etc.)
-4. Alege variabila EXACTĂ din lista de mai sus
-5. Dacă nu ești 100% sigur → pune "SKIP"
+**ETICHETE PENTRU CARTE IDENTITATE:**
+- "B.I./C.I. seria" → beneficiarCiSerie SAU apartinatorCiSerie (LITERE: ZE, TT)
+- "seria XX nr." → beneficiarCiNumar SAU apartinatorCiNumar (CIFRE: 324125)
+- "eliberat la data de" → apartinatorCiEliberatData (format: YYYY-MM-DD)
+- "de Secția de poliție" → apartinatorCiEliberatDe
 
-Format răspuns:
-{"replacements": [{"index": 1, "variable": "beneficiarNumeComplet", "confidence": "high"}]}
+**ETICHETE PENTRU DATE:**
+- "Data nașterii:" → beneficiarDataNasterii (format: DD.MM.YYYY, ex: 03.02.1977)
+- ⚠️ NU pune timestamp (1761216640406)! Pune data formatată!
+- "Data:" (în context contract) → dataInceputContract
 
-DOAR JSON, fără text suplimentar!`
-      }, {
-        role: 'user',
-        content: `Analizează TOATE cele ${textPuncteMatches.length} secvențe de puncte din document:\n\n${promptMatches}\n\nReturnează JSON cu mapping-ul complet.`
-      }],
+**ETICHETE PENTRU NUMERE:**
+- "Vârstă:" → CALCULEAZĂ din data nașterii (ex: 47 ani, nu 87!)
+- "Greutate:" → greutate (ex: 87 kg)
+- "Nr." sau "Număr dosar:" → numarDosar
+
+**ETICHETE PENTRU DATE MEDICALE:**
+- "Diagnostic:" → diagnostic
+- "Alergii:" → alergii
+- "Alimentație:" → alimentatie
+- "Mobilitate:" → mobilitate
+- "Comportament:" → comportament
+
+📚 EXEMPLE CONCRETE din documente reale:
+
+EXEMPLU 1 - Secțiunea 1.2 Beneficiar:
+Text: "1.2. Domnul/Doamna ............, cu domiciliul în ........., str. ......, nr. ....., județul/sectorul ........, CNP nr. ........., contul nr. ........., B.I./C.I. seria ..... nr. ........., având cu"
+Mapping CORECT:
+- "Domnul/Doamna ............" → beneficiarNumeComplet (ex: "IANCU JIANU")
+- "cu domiciliul în ........." → beneficiarAdresa (ex: "Strada Nimic 12")
+- "CNP nr. ........." → beneficiarCnp (ex: "1770203036053" - 13 CIFRE!)
+- "contul nr. ........." → SKIP (nu avem variabilă pentru cont bancar)
+- "B.I./C.I. seria ....." → beneficiarCiSerie (ex: "ZE" - LITERE!)
+- "seria XX nr. ........." → beneficiarCiNumar (ex: "324125" - CIFRE!)
+
+EXEMPLU 2 - Secțiunea 1.3 Aparținător:
+Text: "1.3. Domnul/doamna ............, domiciliat/domiciliată în localitatea ........., str. ......, nr. ....., județul/sectorul ........, B.I./C.I. seria ..... nr. ........., eliberat/eliberată la data de ......... de Secția de poliție ........."
+Mapping CORECT:
+- "Domnul/doamna ............" (în 1.3!) → apartinatorNumeComplet (ex: "ANA MARIA POPA")
+- "localitatea ........." → apartinatorAdresa (ex: "Strada Ilie Manea 23")
+- "B.I./C.I. seria ....." (în 1.3!) → apartinatorCiSerie (ex: "TT")
+- "seria XX nr. ........." (în 1.3!) → apartinatorCiNumar (ex: "98343")
+- "eliberat la data de ........." → apartinatorCiEliberatData (ex: "1920-10-12")
+- "de Secția de poliție ........." → apartinatorCiEliberatDe (ex: "UASV")
+
+⚠️ REGULI CRITICE - CITEȘTE CU ATENȚIE:
+
+1. **CNP vs CI număr - NU LE CONFUNDA!**
+   - CNP = 13 cifre (ex: 1770203036053)
+   - CI număr = 6-7 cifre (ex: 324125)
+   - Context CNP: "CNP nr. ........."
+   - Context CI număr: "B.I./C.I. seria XX nr. ........."
+
+2. **CI Serie vs CI Număr:**
+   - CI Serie = 2-3 LITERE (ex: ZE, TT)
+   - CI Număr = 6-7 CIFRE (ex: 324125)
+   - Ordinea: "B.I./C.I. seria ..... nr. ........."
+   - Prima secvență puncte după "seria" = beneficiarCiSerie
+   - A doua secvență puncte după "nr." = beneficiarCiNumar
+
+3. **Secțiunea 1.2 vs 1.3:**
+   - 1.2 = BENEFICIAR (persoana care intră în cămin)
+   - 1.3 = APARȚINĂTOR (ruda/tutorele)
+   - Variabilele încep cu "beneficiar" sau "apartinator"
+
+4. **Adrese - NU LE AMESTECA:**
+   - beneficiarAdresa = adresa din secțiunea 1.2
+   - apartinatorAdresa = adresa din secțiunea 1.3
+   - Context: "cu domiciliul în" sau "domiciliat în localitatea"
+
+5. **Date - Format YYYY-MM-DD:**
+   - Dacă vezi "1920-10-12" → este DATA NAȘTERII apartinatorului
+   - Dacă vezi "2025-10-12" → poate fi data contract/eliberare CI
+   - NU pune date în loc de CNP sau CI număr!
+
+📋 ALGORITM PAS CU PAS:
+
+Pentru fiecare secvență de puncte:
+
+PASUL 1: Citește contextul înainte (ultimele 80 caractere)
+PASUL 2: Identifică secțiunea:
+   - Dacă vezi "1.2" sau "Domnul/Doamna" (prima dată) → BENEFICIAR
+   - Dacă vezi "1.3" sau "având cu" → APARȚINĂTOR
+
+PASUL 3: Identifică tipul câmpului:
+   - "Domnul/Doamna" + puncte → Nume complet
+   - "cu domiciliul în" + puncte → Adresă
+   - "CNP nr." + puncte → CNP (13 cifre!)
+   - "B.I./C.I. seria" + puncte → CI Serie (litere!)
+   - "seria XX nr." + puncte → CI Număr (cifre!)
+   - "eliberat la data de" + puncte → Data eliberare CI
+   - "de Secția" + puncte → Unde s-a eliberat CI
+
+PASUL 4: Alege variabila:
+   - Dacă BENEFICIAR + Nume → beneficiarNumeComplet
+   - Dacă BENEFICIAR + CNP → beneficiarCnp
+   - Dacă BENEFICIAR + CI Serie → beneficiarCiSerie
+   - Dacă BENEFICIAR + CI Număr → beneficiarCiNumar
+   - Dacă APARȚINĂTOR + Nume → apartinatorNumeComplet
+   - Dacă APARȚINĂTOR + Adresă → apartinatorAdresa
+   - etc.
+
+PASUL 5: Verificare finală ÎNAINTE de a returna răspunsul:
+   ✅ CNP-ul are 13 cifre? (ex: 1770203036053)
+   ✅ CI Numărul are 6-7 cifre? (ex: 324125)
+   ✅ CI Seria are 2-3 litere? (ex: ZE, TT)
+   ✅ Data e formatată DD.MM.YYYY? (ex: 03.02.1977, NU 1761216640406)
+   ✅ Vârsta e calculată din data nașterii? (ex: 47 ani, NU 87)
+   ✅ Numele NU e duplicat? (ex: "IANCU JIANU", NU "IANCU JIANU IANCU JIANU")
+   ✅ Beneficiar ≠ Aparținător? (nume diferite, CNP-uri diferite)
+
+🚫 NU FACE NICIODATĂ:
+- NU pune CNP în loc de CI număr
+- NU pune CI număr în loc de CNP
+- NU amesteca beneficiar cu aparținător
+- NU pune adrese în locuri greșite
+- NU pune date în loc de numere
+- NU pune numere în loc de nume
+- NU pune sume de bani în loc de nume persoane
+- NU pune date în loc de adrese
+
+🎯 ORDINEA STRICTĂ în document (RESPECTĂ-O!):
+Secțiunea 1.2 (Beneficiar):
+1. Nume complet beneficiar
+2. Adresă beneficiar
+3. CNP beneficiar (13 cifre)
+4. Cont bancar (SKIP)
+5. CI Serie beneficiar (litere)
+6. CI Număr beneficiar (cifre)
+
+Secțiunea 1.3 (Aparținător):
+7. Nume complet aparținător
+8. Adresă aparținător
+9. CI Serie aparținător (litere)
+10. CI Număr aparținător (cifre)
+11. Data eliberare CI aparținător
+12. Locație eliberare CI aparținător
+
+Secțiunea 2 (Contract):
+13. Cost serviciu (sumă)
+14. Data început contract
+
+Format răspuns JSON:
+{"replacements": [
+  {"index": 1, "variable": "beneficiarNumeComplet", "confidence": "high", "reasoning": "Context: 'Domnul/Doamna' în secțiunea 1.2"},
+  {"index": 6, "variable": "beneficiarCnp", "confidence": "high", "reasoning": "Context: 'CNP nr.' - 13 cifre"}
+]}
+
+IMPORTANT: Adaugă "reasoning" pentru fiecare mapping să văd logica ta!`;
+
+    const userPrompt = `Analizează TOATE cele ${textPuncteMatches.length} secvențe de puncte din document:\n\n${promptMatches}\n\nReturnează JSON cu mapping-ul complet.`;
+
+    // Apel Claude 3.5 Sonnet
+    const aiResponse = await anthropic.messages.create({
+      model: CLAUDE_MODELS.SONNET_3_5,
+      max_tokens: 4000,
       temperature: 0.1,
-      max_tokens: 4000 // ✅ Crescut pentru a procesa toate câmpurile
+      system: systemPrompt,
+      messages: [{
+        role: 'user',
+        content: userPrompt
+      }]
     });
 
-    const aiContent = aiResponse.choices[0].message.content || '{}';
+    const aiContent = aiResponse.content[0].type === 'text' ? aiResponse.content[0].text : '{}';
     let mapping: any = { replacements: [] };
+    
+    // 🔍 DEBUG: Salvăm răspunsul Claude pentru analiză
+    console.log('🤖 Claude răspuns RAW (primele 500 caractere):');
+    console.log(aiContent.substring(0, 500));
     
     try {
       const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
       mapping = jsonMatch ? JSON.parse(jsonMatch[0]) : { replacements: [] };
     } catch (e) {
-      console.log('⚠️ Eroare parse JSON');
+      console.log('⚠️ Eroare parse JSON:', e);
+      console.log('📄 Content complet:', aiContent);
     }
 
-    console.log(`📋 GPT: ${mapping.replacements?.length || 0} înlocuiri`);
+    console.log(`📋 Claude: ${mapping.replacements?.length || 0} înlocuiri`);
+    
+    // 🔍 DEBUG: Afișăm primele 10 mapping-uri pentru verificare
+    if (mapping.replacements && mapping.replacements.length > 0) {
+      console.log('🔍 Primele 10 mapping-uri de la Claude:');
+      mapping.replacements.slice(0, 10).forEach((r: any) => {
+        console.log(`  ${r.index}. ${r.variable} = "${vars[r.variable as keyof typeof vars]}" | Reasoning: ${r.reasoning || 'N/A'}`);
+      });
+    }
 
     // ✅ STRATEGIE NOUĂ: Înlocuire DIRECTĂ în ordinea apariției
     let modifiedXml = xmlContent;
@@ -257,15 +403,20 @@ DOAR JSON, fără text suplimentar!`
         continue;
       }
 
-      // ✅ Găsim PRIMA apariție a acestei secvențe de puncte în XML
+      // ✅ Găsim PRIMA apariție NEÎNLOCUITĂ a acestei secvențe de puncte în XML
       const puncteToFind = textMatch.puncte;
       const puncteRegexEscaped = puncteToFind.replace(/\./g, '\\.');
+      
+      // IMPORTANT: Căutăm doar secvențe de puncte care NU au fost deja înlocuite
+      // Adăugăm un marker unic după fiecare înlocuire pentru a evita confuziile
       const searchRegex = new RegExp(`(<w:t[^>]*>)([^<]*)(${puncteRegexEscaped})([^<]*)(</w:t>)`);
       
       const match = modifiedXml.match(searchRegex);
       if (match) {
-        // Înlocuim punctele cu valoarea, păstrând textul din jur
-        const replacement = `${match[1]}${match[2]}${value.toString()}${match[4]}${match[5]}`;
+        // Înlocuim punctele cu valoarea + un marker invizibil temporar
+        // Marker-ul va fi eliminat la final
+        const uniqueMarker = `<!--REPLACED_${count}-->`;
+        const replacement = `${match[1]}${match[2]}${value.toString()}${uniqueMarker}${match[4]}${match[5]}`;
         modifiedXml = modifiedXml.replace(searchRegex, replacement);
         
         console.log(`✅ ${count + 1}. ${repl.variable}: "${puncteToFind}" → "${value}" (confidence: ${repl.confidence || 'N/A'})`);
@@ -281,14 +432,25 @@ DOAR JSON, fără text suplimentar!`
     console.log(`   ⏭️ Omise: ${skipped} câmpuri`);
     console.log(`   📋 Rămase necompletate: ${textPuncteMatches.length - count - skipped}`);
 
+    // ✅ Eliminăm marker-ii temporari înainte de salvare
+    modifiedXml = modifiedXml.replace(/<!--REPLACED_\d+-->/g, '');
+    console.log('🧹 Marker-i temporari eliminați');
+
     // Salvăm
     zip.file('word/document.xml', modifiedXml);
     const finalBuffer = zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' });
 
+    // Eliminăm diacriticele din numele fișierului pentru header-ul HTTP
+    const safeFileName = file.name
+      .replace('.docx', '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Elimină diacritice
+      .replace(/[^a-zA-Z0-9_-]/g, '_'); // Înlocuiește caractere speciale cu _
+    
     return new NextResponse(finalBuffer as any, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'Content-Disposition': `attachment; filename="${file.name.replace('.docx', '')}_completat.docx"`,
+        'Content-Disposition': `attachment; filename="${safeFileName}_completat.docx"`,
       },
     });
 

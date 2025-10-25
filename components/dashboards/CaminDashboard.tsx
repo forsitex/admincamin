@@ -133,16 +133,19 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
             <Utensils className="w-6 h-6" />
             <span className="font-semibold">Meniu AI</span>
           </Link>
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 opacity-60 cursor-not-allowed flex items-center gap-3">
+          <Link
+            href="/medical-reports"
+            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
+          >
             <Pill className="w-6 h-6" />
-            <span className="font-semibold">Medicamente (în curând)</span>
-          </div>
+            <span className="font-semibold">Rapoarte Medicale</span>
+          </Link>
           <Link
             href="/rapoarte"
             className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
           >
             <FileText className="w-6 h-6" />
-            <span className="font-semibold">Rapoarte</span>
+            <span className="font-semibold">Rapoarte Financiare</span>
           </Link>
           <Link
             href="/pontaje"

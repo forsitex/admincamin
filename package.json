@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.67.0",
     "@firebase/auth": "^1.11.0",
     "@firebase/firestore": "^4.9.2",
     "@firebase/storage": "^0.14.0",
@@ -16,6 +17,7 @@
     "@react-pdf/renderer": "^4.3.1",
     "@zxing/library": "^0.21.3",
     "date-fns": "^4.1.0",
+    "docx-templates": "^4.14.1",
     "docxtemplater": "^3.67.0",
     "firebase": "^12.4.0",
     "firebase-admin": "^13.5.0",
