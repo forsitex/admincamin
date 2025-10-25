@@ -49,10 +49,13 @@ export default function FamilyGalleryPage() {
       setError('');
       
       console.log('🔍 Căutare acces pentru token:', token);
+      console.log('🔍 Token length:', token.length);
       
       // Căutăm în toate companiile după token
       const companiesRef = collection(db, 'companies');
       const companiesSnap = await getDocs(companiesRef);
+      
+      console.log('📊 Găsit', companiesSnap.docs.length, 'companii');
       
       let foundAccess = false;
       let foundPhotos: Photo[] = [];
@@ -82,6 +85,12 @@ export default function FamilyGalleryPage() {
             
             for (const accessDoc of accessSnap.docs) {
               const accessData = accessDoc.data();
+              
+              console.log('🔑 Verificare token:', {
+                dbToken: accessData.accessToken,
+                urlToken: token,
+                match: accessData.accessToken === token
+              });
               
               if (accessData.accessToken === token) {
                 // GĂSIT! Încărcăm galeria
