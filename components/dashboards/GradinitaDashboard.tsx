@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Building, Baby, Palette, Calendar, Users, Plus, TrendingUp, Activity, Utensils } from 'lucide-react';
+import { Building, Baby, Palette, Calendar, Users, Plus, TrendingUp, Activity, Utensils, DollarSign } from 'lucide-react';
+import { getLocationDetailsUrl, getAddLocationUrl, getAddPersonUrl, getAddPersonLabel } from '@/lib/location-helpers';
 
 interface GradinitaDashboardProps {
   locations: any[];
@@ -65,37 +66,23 @@ export default function GradinitaDashboard({ locations, onDelete }: GradinitaDas
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-gradient-to-r from-blue-500 to-pink-500 rounded-xl shadow-lg p-6 text-white">
-        <h3 className="text-xl font-bold mb-4">Acțiuni Rapide</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Acțiuni Rapide Globale */}
+      <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-2xl shadow-xl p-6 mb-8">
+        <h2 className="text-2xl font-bold text-white mb-4">Acțiuni Rapide Globale</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
-            href="/children/add"
+            href={getAddLocationUrl('gradinita')}
             className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
           >
-            <Baby className="w-6 h-6" />
-            <span className="font-semibold">Adaugă Copil</span>
+            <Building className="w-6 h-6" />
+            <span className="font-semibold">Adaugă Grădiniță Nouă</span>
           </Link>
           <Link
-            href="/activities"
+            href="/reports/financial"
             className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
           >
-            <Palette className="w-6 h-6" />
-            <span className="font-semibold">Activități</span>
-          </Link>
-          <Link
-            href="/attendance"
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
-          >
-            <Calendar className="w-6 h-6" />
-            <span className="font-semibold">Prezență</span>
-          </Link>
-          <Link
-            href="/parents"
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
-          >
-            <Users className="w-6 h-6" />
-            <span className="font-semibold">Părinți</span>
+            <DollarSign className="w-6 h-6" />
+            <span className="font-semibold">Raport Financiar (Toate Grădinițele)</span>
           </Link>
         </div>
       </div>
@@ -105,7 +92,7 @@ export default function GradinitaDashboard({ locations, onDelete }: GradinitaDas
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Grădinițele Tale</h2>
           <Link
-            href="/gradinite/add"
+            href={getAddLocationUrl('gradinita')}
             className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg"
           >
             <Plus className="w-5 h-5" />
@@ -142,7 +129,7 @@ export default function GradinitaDashboard({ locations, onDelete }: GradinitaDas
               
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/camine/${location.id}`}
+                  href={getLocationDetailsUrl('gradinita', location.id)}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-center font-semibold hover:bg-blue-700 transition"
                 >
                   Vezi detalii

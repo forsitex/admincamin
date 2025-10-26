@@ -292,6 +292,15 @@ export const getSidebarConfig = (type: OrganizationType): SidebarItem[] => {
           bgColor: 'bg-yellow-50',
           hoverColor: 'hover:bg-yellow-100'
         },
+        {
+          icon: FileText,
+          label: 'Rapoarte AI',
+          href: '/reports-ai',
+          badge: 'Soon',
+          color: 'text-indigo-600',
+          bgColor: 'bg-indigo-50',
+          hoverColor: 'hover:bg-indigo-100'
+        },
         ...aiItems
       ];
 

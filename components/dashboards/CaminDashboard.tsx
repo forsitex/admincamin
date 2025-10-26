@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { Building, Users, Utensils, Pill, FileText, Plus, TrendingUp, Activity, QrCode, Clock } from 'lucide-react';
+import { Building, Users, Pill, FileText, Plus, TrendingUp, Activity, Utensils, Clock, QrCode } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { getLocationDetailsUrl, getAddLocationUrl, getAddPersonUrl, getAddPersonLabel } from '@/lib/location-helpers';
 
 interface CaminDashboardProps {
   locations: any[];
@@ -120,11 +121,11 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
         <h3 className="text-xl font-bold mb-4">Acțiuni Rapide</h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Link
-            href="/residents/add"
+            href={getAddPersonUrl('camin', '')}
             className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3"
           >
             <Users className="w-6 h-6" />
-            <span className="font-semibold">Adaugă Rezident</span>
+            <span className="font-semibold">{getAddPersonLabel('camin')}</span>
           </Link>
           <Link
             href="/menu-ai"
@@ -162,7 +163,7 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Căminele Tale</h2>
           <Link
-            href="/camine/add"
+            href={getAddLocationUrl('camin')}
             className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
           >
             <Plus className="w-5 h-5" />
@@ -192,7 +193,7 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/camine/${location.id}`}
+                    href={getLocationDetailsUrl('camin', location.id)}
                     className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-center font-semibold hover:bg-purple-700 transition"
                   >
                     Vezi detalii

@@ -12,6 +12,7 @@ import CaminDashboard from '@/components/dashboards/CaminDashboard';
 import GradinitaDashboard from '@/components/dashboards/GradinitaDashboard';
 import SpitalDashboard from '@/components/dashboards/SpitalDashboard';
 import HotelDashboard from '@/components/dashboards/HotelDashboard';
+import { getAddLocationUrl, getLocationSingularName } from '@/lib/location-helpers';
 
 export default function DashboardNewPage() {
   const router = useRouter();
@@ -318,11 +319,11 @@ export default function DashboardNewPage() {
                 ⭐ Upgrade
               </Link>
               <Link
-                href="/camine/add"
+                href={getAddLocationUrl(company?.type || 'camin')}
                 className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-black transition shadow-lg"
               >
                 <Plus className="w-5 h-5" />
-                Adaugă Cămin
+                Adaugă {getLocationSingularName(company?.type || 'camin')}
               </Link>
               
               {/* Profile Dropdown */}
