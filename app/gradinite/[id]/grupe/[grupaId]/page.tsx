@@ -10,7 +10,13 @@ import {
   Baby,
   Image as ImageIcon,
   FileText,
-  CheckCircle
+  CheckCircle,
+  Palette,
+  ClipboardCheck,
+  Camera,
+  FileBarChart,
+  UtensilsCrossed,
+  Mail
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
@@ -156,6 +162,63 @@ export default function GrupaChildrenPage() {
             {grupa.sala && (
               <p className="text-white/80">📍 {grupa.sala}</p>
             )}
+          </div>
+
+          {/* Acțiuni Rapide Grupă */}
+          <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              ⚡ Acțiuni Rapide Grupă
+            </h2>
+            
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+              <Link
+                href={`/activities/add?gradinitaId=${gradinitaId}&grupaId=${grupaId}`}
+                className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
+              >
+                <Palette className="w-8 h-8" />
+                <span className="font-semibold text-center">Activități</span>
+              </Link>
+              
+              <Link
+                href={`/attendance/group/${grupaId}`}
+                className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
+              >
+                <ClipboardCheck className="w-8 h-8" />
+                <span className="font-semibold text-center">Prezență</span>
+              </Link>
+              
+              <Link
+                href={`/gradinite/${gradinitaId}/grupe/${grupaId}/gallery`}
+                className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
+              >
+                <Camera className="w-8 h-8" />
+                <span className="font-semibold text-center">Galerie</span>
+              </Link>
+              
+              <Link
+                href={`/gradinite/${gradinitaId}/grupe/${grupaId}/reports`}
+                className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
+              >
+                <FileBarChart className="w-8 h-8" />
+                <span className="font-semibold text-center">Rapoarte</span>
+              </Link>
+              
+              <Link
+                href={`/gradinite/${gradinitaId}/grupe/${grupaId}/letters`}
+                className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-indigo-500 to-purple-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
+              >
+                <Mail className="w-8 h-8" />
+                <span className="font-semibold text-center">Scrisori</span>
+              </Link>
+              
+              <Link
+                href={`/gradinite/${gradinitaId}/menus`}
+                className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
+              >
+                <UtensilsCrossed className="w-8 h-8" />
+                <span className="font-semibold text-center">Meniu</span>
+              </Link>
+            </div>
           </div>
 
           {/* Actions */}
