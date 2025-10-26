@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { getUserDashboard } from '@/lib/user-roles';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,17 +25,23 @@ export default function LoginPage() {
     try {
       // Autentificare cu Firebase Auth
       console.log('🔐 Încercare autentificare:', email);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('✅ Autentificare reușită!', userCredential.user.email);
+      await signInWithEmailAndPassword(auth, email, password);
+      console.log('✅ Autentificare reușită!');
       
-      // Salvare user în localStorage pentru persistență
-      localStorage.setItem('user', JSON.stringify({
-        email: userCredential.user.email,
-        uid: userCredential.user.uid
-      }));
-
-      // Redirect la dashboard
-      router.push('/dashboard');
+      // Așteaptă puțin ca Firebase să seteze auth.currentUser
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Obține dashboard-ul corect bazat pe rol
+      const dashboard = await getUserDashboard();
+      
+      if (dashboard) {
+        console.log('✅ Redirect la:', dashboard);
+        router.push(dashboard);
+      } else {
+        // Fallback la dashboard-new dacă nu se poate determina
+        console.log('⚠️ Nu s-a putut determina rolul - redirect la dashboard-new');
+        router.push('/dashboard-new');
+      }
     } catch (err: any) {
       console.error('❌ Eroare autentificare:', err);
       

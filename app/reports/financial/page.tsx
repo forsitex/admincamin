@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { getOrgAndLocation } from '@/lib/firebase-helpers';
 
 export default function FinancialReportPage() {
   const router = useRouter();
@@ -44,7 +45,10 @@ export default function FinancialReportPage() {
       }
 
       // Încarcă toate grădinițele
-      const locationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const orgData = await getOrgAndLocation();
+      if (!orgData) return;
+
+      const locationsRef = collection(db, 'organizations', orgData.organizationId, 'locations');
       const locationsSnap = await getDocs(locationsRef);
       const locationsData = locationsSnap.docs.map(doc => ({
         id: doc.id,
@@ -62,7 +66,7 @@ export default function FinancialReportPage() {
       // Încarcă copiii
       let allChildren: any[] = [];
       for (const location of locationsData) {
-        const childrenRef = collection(db, 'organizations', user.uid, 'locations', location.id, 'children');
+        const childrenRef = collection(db, 'organizations', orgData.organizationId, 'locations', location.id, 'children');
         const childrenSnap = await getDocs(childrenRef);
         const locationChildren = childrenSnap.docs.map(doc => ({
           id: doc.id,

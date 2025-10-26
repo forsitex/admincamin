@@ -15,6 +15,8 @@ interface Grupa {
   educatori: string[];
   sala?: string;
   emoji?: string;
+  emailEducatoare?: string;
+  parolaEducatoare?: string;
 }
 
 export default function GrupeManagementPage() {
@@ -36,7 +38,9 @@ export default function GrupeManagementPage() {
     capacitate: 20,
     educatori: [],
     sala: '',
-    emoji: '🎨'
+    emoji: '🎨',
+    emailEducatoare: '',
+    parolaEducatoare: ''
   });
 
   useEffect(() => {
@@ -83,9 +87,16 @@ export default function GrupeManagementPage() {
       const user = auth.currentUser;
       if (!user) return;
 
+      // Generează parolă dacă nu e setată și există email
+      let parolaFinala = formData.parolaEducatoare;
+      if (formData.emailEducatoare && !parolaFinala) {
+        parolaFinala = generatePassword();
+      }
+
       const newGrupa = {
         ...formData,
-        id: `grupa-${Date.now()}`
+        id: `grupa-${Date.now()}`,
+        parolaEducatoare: parolaFinala
       };
 
       const updatedGrupe = [...grupe, newGrupa];
@@ -97,10 +108,17 @@ export default function GrupeManagementPage() {
 
       setGrupe(updatedGrupe);
       setShowAddModal(false);
+      
+      // Afișează parola generată
+      if (formData.emailEducatoare && parolaFinala) {
+        alert(`✅ Grupă adăugată cu succes!\n\n👩‍🏫 Date Login Educatoare:\nEmail: ${formData.emailEducatoare}\nParolă: ${parolaFinala}\n\n⚠️ Notează aceste date și comunică-le educatoarei!`);
+      }
+      
       resetForm();
       console.log('✅ Grupă adăugată!');
     } catch (error) {
       console.error('❌ Eroare adăugare grupă:', error);
+      alert('❌ Eroare la adăugarea grupei. Te rog încearcă din nou.');
     }
   };
 
@@ -109,8 +127,19 @@ export default function GrupeManagementPage() {
       const user = auth.currentUser;
       if (!user || !editingGrupa) return;
 
+      // Generează parolă nouă dacă email e nou și nu există parolă
+      let parolaFinala = formData.parolaEducatoare;
+      if (formData.emailEducatoare && !parolaFinala) {
+        parolaFinala = generatePassword();
+      }
+
+      const updatedFormData = {
+        ...formData,
+        parolaEducatoare: parolaFinala
+      };
+
       const updatedGrupe = grupe.map(g => 
-        g.id === editingGrupa.id ? formData : g
+        g.id === editingGrupa.id ? updatedFormData : g
       );
       
       const gradinitaRef = doc(db, 'organizations', user.uid, 'locations', gradinitaId);
@@ -119,6 +148,14 @@ export default function GrupeManagementPage() {
       });
 
       setGrupe(updatedGrupe);
+      
+      // Afișează parola dacă a fost generată nou
+      if (formData.emailEducatoare && parolaFinala && !formData.parolaEducatoare) {
+        alert(`✅ Grupă actualizată!\n\n👩‍🏫 Date Login Educatoare:\nEmail: ${formData.emailEducatoare}\nParolă: ${parolaFinala}\n\n⚠️ Notează aceste date și comunică-le educatoarei!`);
+      } else {
+        alert('✅ Grupă actualizată cu succes!');
+      }
+      
       setEditingGrupa(null);
       resetForm();
       console.log('✅ Grupă actualizată!');
@@ -158,12 +195,28 @@ export default function GrupeManagementPage() {
       capacitate: 20,
       educatori: [],
       sala: '',
-      emoji: '🎨'
+      emoji: '🎨',
+      emailEducatoare: '',
+      parolaEducatoare: ''
     });
   };
 
+  // Generează parolă aleatorie de 6 caractere
+  const generatePassword = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < 6; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
   const openEditModal = (grupa: Grupa) => {
-    setFormData(grupa);
+    setFormData({
+      ...grupa,
+      emailEducatoare: grupa.emailEducatoare || '',
+      parolaEducatoare: grupa.parolaEducatoare || ''
+    });
     setEditingGrupa(grupa);
   };
 
@@ -419,6 +472,42 @@ export default function GrupeManagementPage() {
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500"
                   placeholder="ex: Maria Popescu, Ana Ionescu (separă cu virgulă)"
                 />
+              </div>
+
+              {/* Email și Parolă Educatoare */}
+              <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4 space-y-4">
+                <h3 className="text-sm font-bold text-purple-900 flex items-center gap-2">
+                  👩‍🏫 Date Login Educatoare
+                </h3>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Educatoare (pentru login)
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.emailEducatoare}
+                    onChange={(e) => setFormData({ ...formData, emailEducatoare: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500"
+                    placeholder="ex: maria@gradinita.ro"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Parolă (opțional - se generează automat dacă lipsește)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.parolaEducatoare}
+                    onChange={(e) => setFormData({ ...formData, parolaEducatoare: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500"
+                    placeholder="Lasă gol pentru generare automată"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    💡 Dacă lași gol, se va genera o parolă de 6 caractere automat
+                  </p>
+                </div>
               </div>
             </div>
 

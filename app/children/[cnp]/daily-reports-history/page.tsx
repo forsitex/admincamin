@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { getOrgAndLocation } from '@/lib/firebase-helpers';
 
 export default function DailyReportsHistoryPage() {
   const router = useRouter();
@@ -41,14 +42,17 @@ export default function DailyReportsHistoryPage() {
       }
 
       // Găsește copilul
-      const locationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const orgData = await getOrgAndLocation();
+      if (!orgData) return;
+
+      const locationsRef = collection(db, 'organizations', orgData.organizationId, 'locations');
       const locationsSnap = await getDocs(locationsRef);
       
       let foundChild = null;
       let foundLocationId = '';
 
       for (const locationDoc of locationsSnap.docs) {
-        const childRef = doc(db, 'organizations', user.uid, 'locations', locationDoc.id, 'children', cnp);
+        const childRef = doc(db, 'organizations', orgData.organizationId, 'locations', locationDoc.id, 'children', cnp);
         const childSnap = await getDoc(childRef);
         
         if (childSnap.exists()) {
@@ -68,7 +72,7 @@ export default function DailyReportsHistoryPage() {
       setLocationId(foundLocationId);
 
       // Încarcă rapoartele pentru luna selectată
-      const reportsRef = collection(db, 'organizations', user.uid, 'locations', foundLocationId, 'children', cnp, 'dailyReports');
+      const reportsRef = collection(db, 'organizations', orgData.organizationId, 'locations', foundLocationId, 'children', cnp, 'dailyReports');
       const reportsSnap = await getDocs(reportsRef);
       
       const allReports = reportsSnap.docs.map(doc => ({

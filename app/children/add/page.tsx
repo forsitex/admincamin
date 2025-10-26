@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Baby, Save, CheckCircle } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { getOrgAndLocation } from '@/lib/firebase-helpers';
 
 // Componente pentru fiecare step
 import Step1GradinitaGrupa from '@/components/children/Step1GradinitaGrupa';
@@ -84,7 +85,10 @@ function AddChildContent() {
       const user = auth.currentUser;
       if (!user) return;
 
-      const locationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const orgData = await getOrgAndLocation();
+      if (!orgData) return;
+
+      const locationsRef = collection(db, 'organizations', orgData.organizationId, 'locations');
       const locationsSnap = await getDocs(locationsRef);
       const gradiniteData = locationsSnap.docs
         .filter(doc => doc.data().type === 'gradinita')
@@ -171,7 +175,10 @@ function AddChildContent() {
       const varsta = Math.floor((Date.now() - dataNasterii.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
 
       // Salvare copil în Firestore
-      const childRef = doc(db, 'organizations', user.uid, 'locations', formData.gradinitaId, 'children', formData.cnp);
+      const orgData = await getOrgAndLocation(formData.gradinitaId);
+      if (!orgData) return;
+
+      const childRef = doc(db, 'organizations', orgData.organizationId, 'locations', formData.gradinitaId, 'children', formData.cnp);
       await setDoc(childRef, {
         nume: formData.nume.toUpperCase(),
         cnp: formData.cnp,

@@ -44,32 +44,69 @@ export default function GroupAttendancePage() {
         return;
       }
 
-      // Găsește grupa și locația
-      const locationsRef = collection(db, 'organizations', user.uid, 'locations');
-      const locationsSnap = await getDocs(locationsRef);
+      let orgId = '';
+      let locId = '';
       
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        const educatoareData = educatoareSnap.data();
+        orgId = educatoareData.organizationId;
+        locId = educatoareData.locationId;
+      } else {
+        orgId = user.uid;
+      }
+
+      // Găsește grupa și locația
       let foundGrupa = null;
       let foundLocationId = '';
       let grupaChildren: any[] = [];
 
-      for (const locationDoc of locationsSnap.docs) {
-        const locationData = locationDoc.data();
+      if (locId) {
+        // Educatoare - citește direct locația ei
+        const locationRef = doc(db, 'organizations', orgId, 'locations', locId);
+        const locationSnap = await getDoc(locationRef);
         
-        if (locationData.grupe) {
-          const grupa = locationData.grupe.find((g: any) => g.id === grupaId);
+        if (locationSnap.exists()) {
+          const locationData = locationSnap.data();
+          const grupa = locationData.grupe?.find((g: any) => g.id === grupaId);
+          
           if (grupa) {
             foundGrupa = grupa;
-            foundLocationId = locationDoc.id;
+            foundLocationId = locId;
             
-            // Încarcă copiii din această grupă
-            const childrenRef = collection(db, 'organizations', user.uid, 'locations', locationDoc.id, 'children');
+            const childrenRef = collection(db, 'organizations', orgId, 'locations', locId, 'children');
             const childrenSnap = await getDocs(childrenRef);
             
             grupaChildren = (childrenSnap.docs
               .map(doc => ({ id: doc.id, ...doc.data() })) as any[])
               .filter((child: any) => child.grupa === grupa.nume);
-            
-            break;
+          }
+        }
+      } else {
+        // Admin - caută în toate locațiile
+        const locationsRef = collection(db, 'organizations', orgId, 'locations');
+        const locationsSnap = await getDocs(locationsRef);
+        
+        for (const locationDoc of locationsSnap.docs) {
+          const locationData = locationDoc.data();
+          
+          if (locationData.grupe) {
+            const grupa = locationData.grupe.find((g: any) => g.id === grupaId);
+            if (grupa) {
+              foundGrupa = grupa;
+              foundLocationId = locationDoc.id;
+              
+              const childrenRef = collection(db, 'organizations', orgId, 'locations', locationDoc.id, 'children');
+              const childrenSnap = await getDocs(childrenRef);
+              
+              grupaChildren = (childrenSnap.docs
+                .map(doc => ({ id: doc.id, ...doc.data() })) as any[])
+                .filter((child: any) => child.grupa === grupa.nume);
+              
+              break;
+            }
           }
         }
       }
@@ -198,7 +235,18 @@ export default function GroupAttendancePage() {
       <div className="bg-white shadow">
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <button
-            onClick={() => router.back()}
+            onClick={async () => {
+              const user = auth.currentUser;
+              if (user) {
+                const educatoareRef = doc(db, 'educatoare', user.uid);
+                const educatoareSnap = await getDoc(educatoareRef);
+                if (educatoareSnap.exists()) {
+                  router.push('/dashboard-educatoare');
+                } else {
+                  router.back();
+                }
+              }
+            }}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
           >
             <ArrowLeft className="w-5 h-5" />

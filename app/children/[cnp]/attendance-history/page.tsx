@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { getOrgAndLocation } from '@/lib/firebase-helpers';
 
 export default function ChildAttendanceHistoryPage() {
   const router = useRouter();
@@ -39,14 +40,17 @@ export default function ChildAttendanceHistoryPage() {
       }
 
       // Găsește copilul
-      const locationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const orgData = await getOrgAndLocation();
+      if (!orgData) return;
+
+      const locationsRef = collection(db, 'organizations', orgData.organizationId, 'locations');
       const locationsSnap = await getDocs(locationsRef);
       
       let foundChild = null;
       let foundLocationId = '';
 
       for (const locationDoc of locationsSnap.docs) {
-        const childRef = doc(db, 'organizations', user.uid, 'locations', locationDoc.id, 'children', cnp);
+        const childRef = doc(db, 'organizations', orgData.organizationId, 'locations', locationDoc.id, 'children', cnp);
         const childSnap = await getDoc(childRef);
         
         if (childSnap.exists()) {
@@ -70,7 +74,7 @@ export default function ChildAttendanceHistoryPage() {
       const history: any[] = [];
 
       for (const day of daysInMonth) {
-        const attendanceRef = doc(db, 'organizations', user.uid, 'locations', foundLocationId, 'children', cnp, 'attendance', day);
+        const attendanceRef = doc(db, 'organizations', orgData.organizationId, 'locations', foundLocationId, 'children', cnp, 'attendance', day);
         const attendanceSnap = await getDoc(attendanceRef);
         
         if (attendanceSnap.exists()) {

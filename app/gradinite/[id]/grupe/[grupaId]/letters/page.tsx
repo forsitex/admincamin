@@ -34,6 +34,7 @@ export default function GrupaLettersPage() {
   const [grupa, setGrupa] = useState<any>(null);
   const [letters, setLetters] = useState<Letter[]>([]);
   const [currentWeek, setCurrentWeek] = useState('');
+  const [upcomingWeeks, setUpcomingWeeks] = useState<string[]>([]);
 
   useEffect(() => {
     loadData();
@@ -47,8 +48,22 @@ export default function GrupaLettersPage() {
         return;
       }
 
+      let orgId = '';
+      let locId = gradinitaId;
+      
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        const educatoareData = educatoareSnap.data();
+        orgId = educatoareData.organizationId;
+        locId = educatoareData.locationId;
+      } else {
+        orgId = user.uid;
+      }
+
       // Încarcă date grădiniță și grupă
-      const gradinitaRef = doc(db, 'organizations', user.uid, 'locations', gradinitaId);
+      const gradinitaRef = doc(db, 'organizations', orgId, 'locations', locId);
       const gradinitaSnap = await getDoc(gradinitaRef);
 
       if (gradinitaSnap.exists()) {
@@ -60,9 +75,9 @@ export default function GrupaLettersPage() {
         const lettersRef = collection(
           db,
           'organizations',
-          user.uid,
+          orgId,
           'locations',
-          gradinitaId,
+          locId,
           'weeklyLetters'
         );
         const lettersSnap = await getDocs(lettersRef);
@@ -79,10 +94,21 @@ export default function GrupaLettersPage() {
 
         setLetters(lettersData);
 
-        // Calculează săptămâna curentă
+        // Calculează săptămâna curentă și următoarele 2 săptămâni
         const now = new Date();
         const weekNumber = getWeekNumber(now);
-        setCurrentWeek(`${now.getFullYear()}-W${weekNumber}`);
+        const current = `${now.getFullYear()}-W${weekNumber}`;
+        setCurrentWeek(current);
+        
+        // Generează următoarele 2 săptămâni
+        const upcoming: string[] = [];
+        for (let i = 1; i <= 2; i++) {
+          const futureDate = new Date(now);
+          futureDate.setDate(now.getDate() + (i * 7));
+          const futureWeekNumber = getWeekNumber(futureDate);
+          upcoming.push(`${futureDate.getFullYear()}-W${futureWeekNumber}`);
+        }
+        setUpcomingWeeks(upcoming);
       }
     } catch (error) {
       console.error('Eroare încărcare date:', error);
@@ -156,9 +182,17 @@ export default function GrupaLettersPage() {
     );
   }
 
-  const mondayLetter = letters.find(l => l.week === currentWeek && l.type === 'monday');
-  const fridayLetter = letters.find(l => l.week === currentWeek && l.type === 'friday');
-  const pastLetters = letters.filter(l => l.week !== currentWeek);
+  // Filtrare scrisori per săptămână
+  const allFutureWeeks = [currentWeek, ...upcomingWeeks];
+  const pastLetters = letters.filter(l => !allFutureWeeks.includes(l.week));
+  
+  // Helper pentru a obține scrisorile unei săptămâni
+  const getLettersForWeek = (week: string) => {
+    return {
+      monday: letters.find(l => l.week === week && l.type === 'monday'),
+      friday: letters.find(l => l.week === week && l.type === 'friday')
+    };
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50">
@@ -166,11 +200,22 @@ export default function GrupaLettersPage() {
       <div className="bg-white shadow">
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <button
-            onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}`)}
+            onClick={async () => {
+              const user = auth.currentUser;
+              if (user) {
+                const educatoareRef = doc(db, 'educatoare', user.uid);
+                const educatoareSnap = await getDoc(educatoareRef);
+                if (educatoareSnap.exists()) {
+                  router.push('/dashboard-educatoare');
+                } else {
+                  router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}`);
+                }
+              }
+            }}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
           >
             <ArrowLeft className="w-5 h-5" />
-            Înapoi la Grupă
+            Înapoi
           </button>
         </div>
       </div>
@@ -189,126 +234,139 @@ export default function GrupaLettersPage() {
             </div>
           </div>
 
-          {/* Săptămâna Curentă */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <Calendar className="w-6 h-6 text-blue-600" />
-              <h2 className="text-2xl font-bold text-gray-900">
-                Săptămâna Curentă ({getWeekDateRange(currentWeek)})
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Scrisoare Luni */}
-              <div className="border-2 border-blue-200 rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <h3 className="text-lg font-bold text-gray-900">LUNI - "Ce ne așteaptă"</h3>
+          {/* Săptămâni Viitoare (Curentă + Următoarele 2) */}
+          {allFutureWeeks.map((week, index) => {
+            const { monday: mondayLetter, friday: fridayLetter } = getLettersForWeek(week);
+            const isCurrent = week === currentWeek;
+            const weekLabel = isCurrent ? 'Săptămâna Curentă' : `Săptămâna ${index === 1 ? 'Viitoare' : '+2'}`;
+            
+            return (
+              <div key={week} className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <Calendar className={`w-6 h-6 ${isCurrent ? 'text-blue-600' : 'text-purple-600'}`} />
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {weekLabel} ({getWeekDateRange(week)})
+                  </h2>
+                  {!isCurrent && (
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-semibold rounded-full">
+                      Planificare
+                    </span>
+                  )}
                 </div>
 
-                {mondayLetter ? (
-                  <>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Tema: <strong>{mondayLetter.tema}</strong>
-                    </p>
-                    <p className="text-xs text-gray-500 mb-4">
-                      Publicat: {new Date(mondayLetter.publishedAt?.seconds * 1000).toLocaleDateString('ro-RO', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/${mondayLetter.id}`)}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                      >
-                        <Eye className="w-4 h-4" />
-                        Vezi
-                      </button>
-                      <button
-                        onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/${mondayLetter.id}/edit`)}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(mondayLetter.id)}
-                        className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Scrisoare Luni */}
+                  <div className="border-2 border-blue-200 rounded-xl p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <h3 className="text-lg font-bold text-gray-900">LUNI - "Ce ne așteaptă"</h3>
                     </div>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/create-monday`)}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                  >
-                    <Plus className="w-5 h-5" />
-                    Creează Scrisoare Luni
-                  </button>
-                )}
-              </div>
 
-              {/* Scrisoare Vineri */}
-              <div className="border-2 border-green-200 rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <h3 className="text-lg font-bold text-gray-900">VINERI - "Ce am realizat"</h3>
+                    {mondayLetter ? (
+                      <>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Tema: <strong>{mondayLetter.tema}</strong>
+                        </p>
+                        <p className="text-xs text-gray-500 mb-4">
+                          Publicat: {new Date(mondayLetter.publishedAt?.seconds * 1000).toLocaleDateString('ro-RO', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/${mondayLetter.id}`)}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                          >
+                            <Eye className="w-4 h-4" />
+                            Vezi
+                          </button>
+                          <button
+                            onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/${mondayLetter.id}/edit`)}
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(mondayLetter.id)}
+                            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/create-monday?week=${week}`)}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+                      >
+                        <Plus className="w-5 h-5" />
+                        Creează Scrisoare Luni
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Scrisoare Vineri */}
+                  <div className="border-2 border-green-200 rounded-xl p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <h3 className="text-lg font-bold text-gray-900">VINERI - "Ce am realizat"</h3>
+                    </div>
+
+                    {fridayLetter ? (
+                      <>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Tema: <strong>{fridayLetter.tema}</strong>
+                        </p>
+                        <p className="text-xs text-gray-500 mb-4">
+                          Publicat: {new Date(fridayLetter.publishedAt?.seconds * 1000).toLocaleDateString('ro-RO', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/${fridayLetter.id}`)}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                          >
+                            <Eye className="w-4 h-4" />
+                            Vezi
+                          </button>
+                          <button
+                            onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/${fridayLetter.id}/edit`)}
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(fridayLetter.id)}
+                            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/create-friday?week=${week}`)}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                        disabled={!mondayLetter}
+                      >
+                        <Plus className="w-5 h-5" />
+                        Creează Scrisoare Vineri
+                      </button>
+                    )}
+                  </div>
                 </div>
-
-                {fridayLetter ? (
-                  <>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Tema: <strong>{fridayLetter.tema}</strong>
-                    </p>
-                    <p className="text-xs text-gray-500 mb-4">
-                      Publicat: {new Date(fridayLetter.publishedAt?.seconds * 1000).toLocaleDateString('ro-RO', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/${fridayLetter.id}`)}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                      >
-                        <Eye className="w-4 h-4" />
-                        Vezi
-                      </button>
-                      <button
-                        onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/${fridayLetter.id}/edit`)}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(fridayLetter.id)}
-                        className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}/letters/create-friday`)}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
-                    disabled={!mondayLetter}
-                  >
-                    <Plus className="w-5 h-5" />
-                    Creează Scrisoare Vineri
-                  </button>
-                )}
               </div>
-            </div>
-          </div>
+            );
+          })}
 
           {/* Arhivă */}
           {pastLetters.length > 0 && (

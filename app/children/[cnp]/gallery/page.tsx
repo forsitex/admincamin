@@ -78,8 +78,20 @@ export default function ChildGalleryPage() {
         return;
       }
 
+      let orgId = '';
+      
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        const educatoareData = educatoareSnap.data();
+        orgId = educatoareData.organizationId;
+      } else {
+        orgId = user.uid;
+      }
+
       // Găsește copilul în toate locațiile
-      const organizationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const organizationsRef = collection(db, 'organizations', orgId, 'locations');
       const locationsSnap = await getDocs(organizationsRef);
 
       let foundChild = null;
@@ -87,7 +99,7 @@ export default function ChildGalleryPage() {
       let foundGrupaId = '';
 
       for (const locationDoc of locationsSnap.docs) {
-        const childRef = doc(db, 'organizations', user.uid, 'locations', locationDoc.id, 'children', cnp);
+        const childRef = doc(db, 'organizations', orgId, 'locations', locationDoc.id, 'children', cnp);
         const childSnap = await getDoc(childRef);
 
         if (childSnap.exists()) {
@@ -117,7 +129,7 @@ export default function ChildGalleryPage() {
           const individualGalleryRef = collection(
             db,
             'organizations',
-            user.uid,
+            orgId,
             'locations',
             foundLocationId,
             'children',
@@ -145,7 +157,7 @@ export default function ChildGalleryPage() {
             const groupGalleryRef = collection(
               db,
               'organizations',
-              user.uid,
+              orgId,
               'locations',
               foundLocationId,
               'grupe',

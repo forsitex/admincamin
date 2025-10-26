@@ -8,6 +8,7 @@ import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import Sidebar from '@/components/Sidebar';
+import { getUserRole, getUserDashboard } from '@/lib/user-roles';
 import CaminDashboard from '@/components/dashboards/CaminDashboard';
 import GradinitaDashboard from '@/components/dashboards/GradinitaDashboard';
 import SpitalDashboard from '@/components/dashboards/SpitalDashboard';
@@ -65,6 +66,18 @@ export default function DashboardNewPage() {
       }
 
       setUser(currentUser);
+
+      // Verifică rolul utilizatorului și redirectează dacă nu e admin
+      const userData = await getUserRole();
+      
+      if (userData && userData.role !== 'admin') {
+        const dashboard = await getUserDashboard();
+        if (dashboard) {
+          console.log(`✅ Utilizator cu rol "${userData.role}" - redirect la ${dashboard}`);
+          router.push(dashboard);
+          return;
+        }
+      }
 
       // Verifică dacă există organizație și dacă are tip selectat
       try {

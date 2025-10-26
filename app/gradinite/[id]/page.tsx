@@ -72,8 +72,25 @@ export default function GradinitaDetailsPage() {
         return;
       }
 
+      let organizationId = '';
+      let locationId = gradinitaId;
+      
+      // Verifică dacă e educatoare
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        // E educatoare
+        const educatoareData = educatoareSnap.data();
+        organizationId = educatoareData.organizationId;
+        locationId = educatoareData.locationId;
+      } else {
+        // E admin
+        organizationId = user.uid;
+      }
+
       // Citește tipul organizației
-      const orgRef = doc(db, 'organizations', user.uid);
+      const orgRef = doc(db, 'organizations', organizationId);
       const orgSnap = await getDoc(orgRef);
       if (orgSnap.exists()) {
         const orgType = orgSnap.data().type || 'gradinita';
@@ -81,7 +98,7 @@ export default function GradinitaDetailsPage() {
       }
 
       // Încarcă date grădiniță
-      const gradinitaRef = doc(db, 'organizations', user.uid, 'locations', gradinitaId);
+      const gradinitaRef = doc(db, 'organizations', organizationId, 'locations', locationId);
       const gradinitaSnap = await getDoc(gradinitaRef);
 
       if (gradinitaSnap.exists()) {
@@ -90,7 +107,7 @@ export default function GradinitaDetailsPage() {
         setReprezentantData(data.reprezentant || { name: '', phone: '', email: '' });
 
         // Încarcă copii
-        const childrenRef = collection(db, 'organizations', user.uid, 'locations', gradinitaId, 'children');
+        const childrenRef = collection(db, 'organizations', organizationId, 'locations', locationId, 'children');
         const childrenSnap = await getDocs(childrenRef);
         const childrenData = childrenSnap.docs.map(doc => ({
           id: doc.id,
@@ -114,7 +131,22 @@ export default function GradinitaDetailsPage() {
       const user = auth.currentUser;
       if (!user) return;
 
-      const gradinitaRef = doc(db, 'organizations', user.uid, 'locations', gradinitaId);
+      let organizationId = '';
+      let locationId = gradinitaId;
+      
+      // Verifică dacă e educatoare
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        const educatoareData = educatoareSnap.data();
+        organizationId = educatoareData.organizationId;
+        locationId = educatoareData.locationId;
+      } else {
+        organizationId = user.uid;
+      }
+
+      const gradinitaRef = doc(db, 'organizations', organizationId, 'locations', locationId);
       await updateDoc(gradinitaRef, {
         reprezentant: reprezentantData
       });

@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { auth, db } from '@/lib/firebase';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { 
-  ArrowLeft, 
-  Plus, 
-  Edit, 
+  LogOut, 
   Baby,
+  Loader2,
+  Edit,
   Image as ImageIcon,
   FileText,
   CheckCircle,
@@ -18,8 +19,23 @@ import {
   UtensilsCrossed,
   Mail
 } from 'lucide-react';
-import { auth, db } from '@/lib/firebase';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import Link from 'next/link';
+
+interface EducatoareSesiune {
+  email: string;
+  organizationId: string;
+  locationId: string;
+  grupa: {
+    id: string;
+    nume: string;
+    emoji?: string;
+    gradinitaNume: string;
+    varsta?: string;
+    capacitate?: number;
+    educatori?: string[];
+    sala?: string;
+  };
+}
 
 interface Child {
   id: string;
@@ -33,103 +49,115 @@ interface Child {
   fotoUrl?: string;
 }
 
-export default function GrupaChildrenPage() {
+export default function DashboardEducatoarePage() {
   const router = useRouter();
-  const params = useParams();
-  const gradinitaId = params.id as string;
-  const grupaId = params.grupaId as string;
-
   const [loading, setLoading] = useState(true);
-  const [gradinita, setGradinita] = useState<any>(null);
-  const [grupa, setGrupa] = useState<any>(null);
-  const [children, setChildren] = useState<Child[]>([]);
+  const [educatoare, setEducatoare] = useState<EducatoareSesiune | null>(null);
+  const [copii, setCopii] = useState<Child[]>([]);
 
   useEffect(() => {
-    loadData();
-  }, [gradinitaId, grupaId]);
+    verificaAutentificare();
+  }, []);
 
-  const loadData = async () => {
+  const verificaAutentificare = async () => {
     try {
+      // Verifică Firebase Auth
       const user = auth.currentUser;
       if (!user) {
-        router.push('/login');
+        router.push('/login-educatoare');
         return;
       }
 
-      let organizationId = '';
-      let locationId = gradinitaId;
-      
-      // Verifică dacă e educatoare
+      // Citește documentul educatoare din Firestore
       const educatoareRef = doc(db, 'educatoare', user.uid);
       const educatoareSnap = await getDoc(educatoareRef);
+
+      if (!educatoareSnap.exists()) {
+        router.push('/login-educatoare');
+        return;
+      }
+
+      const educatoareData = educatoareSnap.data();
       
-      if (educatoareSnap.exists()) {
-        // E educatoare
-        const educatoareData = educatoareSnap.data();
-        organizationId = educatoareData.organizationId;
-        locationId = educatoareData.locationId;
-      } else {
-        // E admin
-        organizationId = user.uid;
-      }
-
-      // Încarcă date grădiniță
-      const gradinitaRef = doc(db, 'organizations', organizationId, 'locations', locationId);
-      const gradinitaSnap = await getDoc(gradinitaRef);
-
-      if (gradinitaSnap.exists()) {
-        const data = gradinitaSnap.data();
-        setGradinita(data);
-
-        // Găsește grupa
-        const grupaData = data.grupe?.find((g: any) => g.id === grupaId);
-        setGrupa(grupaData);
-
-        // Încarcă copii din grupă
-        const childrenRef = collection(db, 'organizations', organizationId, 'locations', locationId, 'children');
-        const childrenSnap = await getDocs(childrenRef);
-        const childrenData = childrenSnap.docs
-          .map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }))
-          .filter((child: any) => child.grupa === grupaData?.nume) as Child[];
+      // Citește datele grupei din Firestore
+      const locationRef = doc(db, 'organizations', educatoareData.organizationId, 'locations', educatoareData.locationId);
+      const locationSnap = await getDoc(locationRef);
+      
+      if (locationSnap.exists()) {
+        const locationData = locationSnap.data();
+        const grupa = locationData.grupe?.find((g: any) => g.id === educatoareData.grupaId);
         
-        setChildren(childrenData);
+        if (grupa) {
+          const educatoareSesiune: EducatoareSesiune = {
+            email: user.email || '',
+            organizationId: educatoareData.organizationId,
+            locationId: educatoareData.locationId,
+            grupa: {
+              ...grupa,
+              gradinitaNume: locationData.name
+            }
+          };
+          
+          setEducatoare(educatoareSesiune);
+          await incarcaCopii(educatoareSesiune);
+        }
       }
+
     } catch (error) {
-      console.error('Eroare încărcare date:', error);
+      console.error('Eroare verificare autentificare:', error);
+      router.push('/login-educatoare');
     } finally {
       setLoading(false);
     }
   };
 
+  const incarcaCopii = async (educatoarData: EducatoareSesiune) => {
+    try {
+      const childrenRef = collection(
+        db,
+        'organizations',
+        educatoarData.organizationId,
+        'locations',
+        educatoarData.locationId,
+        'children'
+      );
+      
+      const childrenSnap = await getDocs(childrenRef);
+      
+      // Filtrează doar copiii din grupa educatoarei
+      const copiiGrupa = childrenSnap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter((copil: any) => copil.grupa === educatoarData.grupa.nume) as Child[];
+
+      setCopii(copiiGrupa);
+
+    } catch (error) {
+      console.error('Eroare încărcare copii:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      router.push('/login-educatoare');
+    } catch (error) {
+      console.error('Eroare logout:', error);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Se încarcă...</p>
+          <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-purple-600" />
+          <p className="text-gray-600">Se încarcă dashboard-ul...</p>
         </div>
       </div>
     );
   }
 
-  if (!grupa) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Grupa nu a fost găsită</p>
-          <Link
-            href={`/gradinite/${gradinitaId}`}
-            className="mt-4 inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Înapoi la Grădiniță
-          </Link>
-        </div>
-      </div>
-    );
+  if (!educatoare) {
+    return null;
   }
 
   return (
@@ -137,13 +165,21 @@ export default function GrupaChildrenPage() {
       {/* Header */}
       <div className="bg-white shadow">
         <div className="container mx-auto px-4 sm:px-6 py-4">
-          <button
-            onClick={() => router.push(`/gradinite/${gradinitaId}`)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Înapoi la Grădiniță
-          </button>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                👩‍🏫 Dashboard Educatoare
+              </h1>
+              <p className="text-sm text-gray-600">{educatoare.email}</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
+            >
+              <LogOut className="w-4 h-4" />
+              Ieșire
+            </button>
+          </div>
         </div>
       </div>
 
@@ -153,19 +189,19 @@ export default function GrupaChildrenPage() {
           {/* Header Grupă */}
           <div className="bg-gradient-to-r from-blue-500 to-pink-500 rounded-2xl shadow-xl p-8 mb-6 text-white">
             <div className="flex items-center gap-4 mb-4">
-              <span className="text-6xl">{grupa.emoji || '🎨'}</span>
+              <span className="text-6xl">{educatoare.grupa.emoji || '🎨'}</span>
               <div className="flex-1">
-                <h1 className="text-3xl font-bold mb-2">{grupa.nume}</h1>
+                <h1 className="text-3xl font-bold mb-2">{educatoare.grupa.nume}</h1>
                 <p className="text-white/90">
-                  {children.length}/{grupa.capacitate} copii | Vârstă: {grupa.varsta}
+                  {copii.length}/{educatoare.grupa.capacitate || 20} copii | Vârstă: {educatoare.grupa.varsta || '2-3 ani'}
                 </p>
               </div>
             </div>
 
-            {grupa.educatori && grupa.educatori.length > 0 && (
+            {educatoare.grupa.educatori && educatoare.grupa.educatori.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="text-white/80">Educatori:</span>
-                {grupa.educatori.map((edu: string, idx: number) => (
+                {educatoare.grupa.educatori.map((edu: string, idx: number) => (
                   <span
                     key={idx}
                     className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold"
@@ -176,8 +212,8 @@ export default function GrupaChildrenPage() {
               </div>
             )}
 
-            {grupa.sala && (
-              <p className="text-white/80">📍 {grupa.sala}</p>
+            {educatoare.grupa.sala && (
+              <p className="text-white/80">📍 {educatoare.grupa.sala}</p>
             )}
           </div>
 
@@ -189,7 +225,7 @@ export default function GrupaChildrenPage() {
             
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <Link
-                href={`/activities/add?gradinitaId=${gradinitaId}&grupaId=${grupaId}`}
+                href="/activities"
                 className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
               >
                 <Palette className="w-8 h-8" />
@@ -197,7 +233,7 @@ export default function GrupaChildrenPage() {
               </Link>
               
               <Link
-                href={`/attendance/group/${grupaId}`}
+                href={`/attendance/group/${educatoare.grupa.id}`}
                 className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-green-500 to-emerald-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
               >
                 <ClipboardCheck className="w-8 h-8" />
@@ -205,7 +241,7 @@ export default function GrupaChildrenPage() {
               </Link>
               
               <Link
-                href={`/gradinite/${gradinitaId}/grupe/${grupaId}/gallery`}
+                href={`/gradinite/${educatoare.locationId}/grupe/${educatoare.grupa.id}/gallery`}
                 className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
               >
                 <Camera className="w-8 h-8" />
@@ -213,7 +249,7 @@ export default function GrupaChildrenPage() {
               </Link>
               
               <Link
-                href={`/gradinite/${gradinitaId}/grupe/${grupaId}/reports`}
+                href={`/gradinite/${educatoare.locationId}/grupe/${educatoare.grupa.id}/reports`}
                 className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
               >
                 <FileBarChart className="w-8 h-8" />
@@ -221,7 +257,7 @@ export default function GrupaChildrenPage() {
               </Link>
               
               <Link
-                href={`/gradinite/${gradinitaId}/grupe/${grupaId}/letters`}
+                href={`/gradinite/${educatoare.locationId}/grupe/${educatoare.grupa.id}/letters`}
                 className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-indigo-500 to-purple-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
               >
                 <Mail className="w-8 h-8" />
@@ -229,7 +265,7 @@ export default function GrupaChildrenPage() {
               </Link>
               
               <Link
-                href={`/gradinite/${gradinitaId}/menus`}
+                href={`/gradinite/${educatoare.locationId}/menus`}
                 className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-xl hover:scale-105 transition shadow-lg"
               >
                 <UtensilsCrossed className="w-8 h-8" />
@@ -238,50 +274,27 @@ export default function GrupaChildrenPage() {
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Titlu Copii */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
-              Copii ({children.length})
+              Copii ({copii.length})
             </h2>
-            <div className="flex gap-3">
-              <Link
-                href={`/gradinite/${gradinitaId}/grupe`}
-                className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-lg"
-              >
-                <Edit className="w-5 h-5" />
-                Editează Grupa
-              </Link>
-              <Link
-                href={`/children/add?gradinitaId=${gradinitaId}&grupaId=${grupaId}`}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg"
-              >
-                <Plus className="w-5 h-5" />
-                Adaugă Copil în Grupă
-              </Link>
-            </div>
           </div>
 
           {/* Lista Copii */}
-          {children.length === 0 ? (
+          {copii.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
               <Baby className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 Nu există copii în această grupă
               </h3>
-              <p className="text-gray-600 mb-6">
-                Adaugă primul copil pentru a începe
+              <p className="text-gray-600">
+                Contactează administratorul pentru a adăuga copii
               </p>
-              <Link
-                href={`/children/add?gradinitaId=${gradinitaId}&grupaId=${grupaId}`}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-              >
-                <Plus className="w-5 h-5" />
-                Adaugă Primul Copil
-              </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {children.map((child) => (
+              {copii.map((child) => (
                 <div
                   key={child.id}
                   className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition border-2 border-blue-100"

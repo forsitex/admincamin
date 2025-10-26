@@ -15,7 +15,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
-import { collection, getDocs, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, getDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import imageCompression from 'browser-image-compression';
 
 interface Photo {
@@ -52,6 +52,8 @@ export default function GrupaGalleryPage() {
   const [filterCategory, setFilterCategory] = useState('');
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(0);
+  const [organizationId, setOrganizationId] = useState<string>('');
+  const [actualLocationId, setActualLocationId] = useState<string>('');
 
   const categories = [
     { value: 'activitati_creative', label: '🎨 Activități Creative' },
@@ -66,6 +68,13 @@ export default function GrupaGalleryPage() {
   ];
 
   useEffect(() => {
+    // RESETEAZĂ state-ul
+    setChildren([]);
+    setPhotos([]);
+    setGrupa(null);
+    setLoading(true);
+    
+    // Încarcă datele
     loadData();
   }, [gradinitaId, grupaId]);
 
@@ -77,41 +86,72 @@ export default function GrupaGalleryPage() {
         return;
       }
 
-      // Încarcă date grădiniță și grupă
-      const gradinitaRef = doc(db, 'organizations', user.uid, 'locations', gradinitaId);
-      const gradinitaSnap = await getDocs(collection(db, 'organizations', user.uid, 'locations'));
+      let orgId = '';
+      let locId = '';
+      
+      // Verifică dacă e educatoare (citește din Firestore)
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        // E educatoare
+        const educatoareData = educatoareSnap.data();
+        orgId = educatoareData.organizationId;
+        locId = educatoareData.locationId;
+        console.log('📍 Educatoare - orgId:', orgId, 'locId:', locId);
+      } else {
+        // E admin
+        orgId = user.uid;
+        locId = gradinitaId;
+      }
+
+      // Salvează în state pentru alte funcții
+      setOrganizationId(orgId);
+      setActualLocationId(locId);
+
+      // Încarcă date grădiniță și grupă - DIRECT din locația specifică
+      const locationRef = doc(db, 'organizations', orgId, 'locations', locId);
+      const locationSnap = await getDoc(locationRef);
       
       let foundGrupa = null;
-      for (const locationDoc of gradinitaSnap.docs) {
-        if (locationDoc.id === gradinitaId) {
-          const locationData = locationDoc.data();
-          foundGrupa = locationData.grupe?.find((g: any) => g.id === grupaId);
-          if (foundGrupa) {
-            setGrupa(foundGrupa);
-            break;
-          }
+      if (locationSnap.exists()) {
+        const locationData = locationSnap.data();
+        foundGrupa = locationData.grupe?.find((g: any) => g.id === grupaId);
+        if (foundGrupa) {
+          setGrupa(foundGrupa);
+          console.log('✅ Grupa găsită:', foundGrupa.nume);
+        } else {
+          console.error('❌ Grupa nu există în această locație');
         }
+      } else {
+        console.error('❌ Locația nu există');
       }
 
       // Încarcă copii din grupă
-      const childrenRef = collection(db, 'organizations', user.uid, 'locations', gradinitaId, 'children');
-      const childrenSnap = await getDocs(childrenRef);
-      const childrenData = (childrenSnap.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as any[])
-        .filter((child: any) => child.grupa === foundGrupa?.nume);
-      
-      setChildren(childrenData);
+      if (foundGrupa) {
+        const childrenRef = collection(db, 'organizations', orgId, 'locations', locId, 'children');
+        const childrenSnap = await getDocs(childrenRef);
+        const childrenData = (childrenSnap.docs
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as any[])
+          .filter((child: any) => child.grupa === foundGrupa.nume);
+        
+        setChildren(childrenData);
+        console.log('✅ Copii încărcați:', childrenData.length, 'din grupa:', foundGrupa.nume);
+      } else {
+        console.error('❌ Grupa nu a fost găsită!');
+        setChildren([]);
+      }
 
       // Încarcă poze
       const galleryRef = collection(
         db,
         'organizations',
-        user.uid,
+        orgId,
         'locations',
-        gradinitaId,
+        locId,
         'grupe',
         grupaId,
         'gallery'
@@ -151,7 +191,7 @@ export default function GrupaGalleryPage() {
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || !auth.currentUser) return;
+    if (!files || !organizationId) return;
 
     if (selectedChildren.length === 0) {
       alert('❌ Te rog selectează cel puțin un copil!');
@@ -179,11 +219,11 @@ export default function GrupaGalleryPage() {
         // Upload
         const formData = new FormData();
         formData.append('file', compressedFile);
-        formData.append('gradinitaId', gradinitaId);
+        formData.append('gradinitaId', actualLocationId);
         formData.append('grupaId', grupaId);
         formData.append('description', description);
         formData.append('category', selectedCategory || 'altele');
-        formData.append('userId', auth.currentUser.uid);
+        formData.append('userId', organizationId);
         formData.append('children', JSON.stringify(selectedChildren));
 
         const response = await fetch('/api/upload-group-photo', {
@@ -219,15 +259,15 @@ export default function GrupaGalleryPage() {
 
   const handleDelete = async (photoId: string) => {
     if (!confirm('Sigur vrei să ștergi această poză?')) return;
-    if (!auth.currentUser) return;
+    if (!organizationId) return;
 
     try {
       const photoRef = doc(
         db,
         'organizations',
-        auth.currentUser.uid,
+        organizationId,
         'locations',
-        gradinitaId,
+        actualLocationId,
         'grupe',
         grupaId,
         'gallery',
@@ -331,11 +371,24 @@ export default function GrupaGalleryPage() {
       <div className="bg-white shadow">
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <button
-            onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}`)}
+            onClick={async () => {
+              const user = auth.currentUser;
+              if (user) {
+                const educatoareRef = doc(db, 'educatoare', user.uid);
+                const educatoareSnap = await getDoc(educatoareRef);
+                if (educatoareSnap.exists()) {
+                  router.push('/dashboard-educatoare');
+                } else {
+                  router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}`);
+                }
+              } else {
+                router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}`);
+              }
+            }}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
           >
             <ArrowLeft className="w-5 h-5" />
-            Înapoi la Grupă
+            Înapoi
           </button>
         </div>
       </div>

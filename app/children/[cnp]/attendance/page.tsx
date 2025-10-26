@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { getOrgAndLocation } from '@/lib/firebase-helpers';
 
 export default function AttendancePage() {
   const router = useRouter();
@@ -55,14 +56,17 @@ export default function AttendancePage() {
       }
 
       // Găsește copilul
-      const organizationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const orgData = await getOrgAndLocation();
+      if (!orgData) return;
+
+      const organizationsRef = collection(db, 'organizations', orgData.organizationId, 'locations');
       const locationsSnap = await getDocs(organizationsRef);
       
       let foundChild = null;
       let foundLocationId = '';
 
       for (const locationDoc of locationsSnap.docs) {
-        const childRef = doc(db, 'organizations', user.uid, 'locations', locationDoc.id, 'children', cnp);
+        const childRef = doc(db, 'organizations', orgData.organizationId, 'locations', locationDoc.id, 'children', cnp);
         const childSnap = await getDoc(childRef);
         
         if (childSnap.exists()) {
@@ -77,7 +81,7 @@ export default function AttendancePage() {
         setLocationId(foundLocationId);
 
         // Încarcă prezența pentru data selectată
-        const attendanceRef = doc(db, 'organizations', user.uid, 'locations', foundLocationId, 'children', cnp, 'attendance', selectedDate);
+        const attendanceRef = doc(db, 'organizations', orgData.organizationId, 'locations', foundLocationId, 'children', cnp, 'attendance', selectedDate);
         const attendanceSnap = await getDoc(attendanceRef);
 
         if (attendanceSnap.exists()) {
@@ -99,7 +103,7 @@ export default function AttendancePage() {
         }
 
         // Încarcă istoric prezență (ultimele 30 zile)
-        const attendanceCollectionRef = collection(db, 'organizations', user.uid, 'locations', foundLocationId, 'children', cnp, 'attendance');
+        const attendanceCollectionRef = collection(db, 'organizations', orgData.organizationId, 'locations', foundLocationId, 'children', cnp, 'attendance');
         const attendanceQuery = query(attendanceCollectionRef, orderBy('date', 'desc'));
         const historySnap = await getDocs(attendanceQuery);
         
@@ -135,7 +139,10 @@ export default function AttendancePage() {
       const user = auth.currentUser;
       if (!user || !locationId) return;
 
-      const attendanceRef = doc(db, 'organizations', user.uid, 'locations', locationId, 'children', cnp, 'attendance', selectedDate);
+      const orgData = await getOrgAndLocation(locationId);
+      if (!orgData) return;
+
+      const attendanceRef = doc(db, 'organizations', orgData.organizationId, 'locations', locationId, 'children', cnp, 'attendance', selectedDate);
       
       await setDoc(attendanceRef, {
         date: selectedDate,

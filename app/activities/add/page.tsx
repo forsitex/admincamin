@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Palette } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, addDoc } from 'firebase/firestore';
 
 export default function AddActivityPage() {
   const router = useRouter();
@@ -48,17 +48,48 @@ export default function AddActivityPage() {
         return;
       }
 
-      const locationsRef = collection(db, 'organizations', user.uid, 'locations');
-      const locationsSnap = await getDocs(locationsRef);
-      const locationsData = locationsSnap.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      setGradinite(locationsData);
+      let organizationId = '';
+      let locationId = '';
       
-      if (locationsData.length > 0) {
-        setFormData(prev => ({ ...prev, gradinitaId: locationsData[0].id }));
+      // Verifică dacă e educatoare
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        // E educatoare - încarcă doar grădinița ei
+        const educatoareData = educatoareSnap.data();
+        organizationId = educatoareData.organizationId;
+        locationId = educatoareData.locationId;
+        
+        const locationsRef = collection(db, 'organizations', organizationId, 'locations');
+        const locationsSnap = await getDocs(locationsRef);
+        const locationData = locationsSnap.docs
+          .filter(doc => doc.id === locationId)
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+        
+        setGradinite(locationData);
+        if (locationData.length > 0) {
+          setFormData(prev => ({ ...prev, gradinitaId: locationData[0].id }));
+        }
+      } else {
+        // E admin - încarcă toate grădinițele
+        organizationId = user.uid;
+        
+        const locationsRef = collection(db, 'organizations', organizationId, 'locations');
+        const locationsSnap = await getDocs(locationsRef);
+        const locationsData = locationsSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setGradinite(locationsData);
+        
+        if (locationsData.length > 0) {
+          setFormData(prev => ({ ...prev, gradinitaId: locationsData[0].id }));
+        }
       }
     } catch (error) {
       console.error('Eroare încărcare date:', error);
@@ -78,7 +109,20 @@ export default function AddActivityPage() {
       const user = auth.currentUser;
       if (!user) return;
 
-      const activitiesRef = collection(db, 'organizations', user.uid, 'locations', formData.gradinitaId, 'activities');
+      let organizationId = '';
+      
+      // Verifică dacă e educatoare
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        const educatoareData = educatoareSnap.data();
+        organizationId = educatoareData.organizationId;
+      } else {
+        organizationId = user.uid;
+      }
+
+      const activitiesRef = collection(db, 'organizations', organizationId, 'locations', formData.gradinitaId, 'activities');
       
       await addDoc(activitiesRef, {
         titlu: formData.titlu,
@@ -94,7 +138,7 @@ export default function AddActivityPage() {
         poze: [],
         noteEducatoare: '',
         publicat: false,
-        createdBy: user.email,
+        createdBy: user.email || '',
         createdAt: new Date()
       });
 

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { getOrgAndLocation } from '@/lib/firebase-helpers';
 
 export default function DailyReportPage() {
   const router = useRouter();
@@ -72,14 +73,17 @@ export default function DailyReportPage() {
       }
 
       // Găsește copilul în toate locațiile
-      const organizationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const orgData = await getOrgAndLocation();
+      if (!orgData) return;
+
+      const organizationsRef = collection(db, 'organizations', orgData.organizationId, 'locations');
       const locationsSnap = await getDocs(organizationsRef);
       
       let foundChild = null;
       let locationId = '';
 
       for (const locationDoc of locationsSnap.docs) {
-        const childRef = doc(db, 'organizations', user.uid, 'locations', locationDoc.id, 'children', cnp);
+        const childRef = doc(db, 'organizations', orgData.organizationId, 'locations', locationDoc.id, 'children', cnp);
         const childSnap = await getDoc(childRef);
         
         if (childSnap.exists()) {
@@ -93,7 +97,7 @@ export default function DailyReportPage() {
         setChild(foundChild);
 
         // Încarcă raportul pentru data selectată (dacă există)
-        const reportRef = doc(db, 'organizations', user.uid, 'locations', locationId, 'children', cnp, 'dailyReports', selectedDate);
+        const reportRef = doc(db, 'organizations', orgData.organizationId, 'locations', locationId, 'children', cnp, 'dailyReports', selectedDate);
         const reportSnap = await getDoc(reportRef);
 
         if (reportSnap.exists()) {
@@ -147,7 +151,7 @@ export default function DailyReportPage() {
         }
 
         // Încarcă lista cu rapoarte existente
-        const reportsRef = collection(db, 'organizations', user.uid, 'locations', locationId, 'children', cnp, 'dailyReports');
+        const reportsRef = collection(db, 'organizations', orgData.organizationId, 'locations', locationId, 'children', cnp, 'dailyReports');
         const reportsSnap = await getDocs(reportsRef);
         const dates = reportsSnap.docs.map(doc => doc.id);
         setExistingReports(dates);
@@ -166,12 +170,15 @@ export default function DailyReportPage() {
       if (!user) return;
 
       // Găsește locația copilului
-      const organizationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const orgData = await getOrgAndLocation();
+      if (!orgData) return;
+
+      const organizationsRef = collection(db, 'organizations', orgData.organizationId, 'locations');
       const locationsSnap = await getDocs(organizationsRef);
       
       let locationId = '';
       for (const locationDoc of locationsSnap.docs) {
-        const childRef = doc(db, 'organizations', user.uid, 'locations', locationDoc.id, 'children', cnp);
+        const childRef = doc(db, 'organizations', orgData.organizationId, 'locations', locationDoc.id, 'children', cnp);
         const childSnap = await getDoc(childRef);
         if (childSnap.exists()) {
           locationId = locationDoc.id;
@@ -185,7 +192,7 @@ export default function DailyReportPage() {
       }
 
       // Salvează raportul
-      const reportRef = doc(db, 'organizations', user.uid, 'locations', locationId, 'children', cnp, 'dailyReports', selectedDate);
+      const reportRef = doc(db, 'organizations', orgData.organizationId, 'locations', locationId, 'children', cnp, 'dailyReports', selectedDate);
       
       const reportData = {
         date: selectedDate,

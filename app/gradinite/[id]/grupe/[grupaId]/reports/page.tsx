@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import Link from 'next/link';
 
 interface Activity {
   id: string;
@@ -74,8 +75,22 @@ export default function GrupaReportsPage() {
         return;
       }
 
+      let orgId = '';
+      let locId = gradinitaId;
+      
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        const educatoareData = educatoareSnap.data();
+        orgId = educatoareData.organizationId;
+        locId = educatoareData.locationId;
+      } else {
+        orgId = user.uid;
+      }
+
       // Încarcă date grădiniță și grupă
-      const gradinitaRef = doc(db, 'organizations', user.uid, 'locations', gradinitaId);
+      const gradinitaRef = doc(db, 'organizations', orgId, 'locations', locId);
       const gradinitaSnap = await getDoc(gradinitaRef);
 
       if (gradinitaSnap.exists()) {
@@ -84,7 +99,7 @@ export default function GrupaReportsPage() {
         setGrupa(grupaData);
 
         // Încarcă copii din grupă
-        const childrenRef = collection(db, 'organizations', user.uid, 'locations', gradinitaId, 'children');
+        const childrenRef = collection(db, 'organizations', orgId, 'locations', locId, 'children');
         const childrenSnap = await getDocs(childrenRef);
         const childrenData = (childrenSnap.docs
           .map(doc => ({
@@ -114,19 +129,33 @@ export default function GrupaReportsPage() {
       const user = auth.currentUser;
       if (!user) return;
 
+      let orgId = '';
+      let locId = gradinitaId;
+      
+      const educatoareRef = doc(db, 'educatoare', user.uid);
+      const educatoareSnap = await getDoc(educatoareRef);
+      
+      if (educatoareSnap.exists()) {
+        const educatoareData = educatoareSnap.data();
+        orgId = educatoareData.organizationId;
+        locId = educatoareData.locationId;
+      } else {
+        orgId = user.uid;
+      }
+
       // Încarcă activități pentru copilul selectat
-      await loadActivities(user.uid);
+      await loadActivities(orgId, locId);
 
       // Calculează statistici pentru copilul selectat
-      await calculateStatsForChild(user.uid, selectedChild);
+      await calculateStatsForChild(orgId, locId, selectedChild);
     } catch (error) {
       console.error('Eroare încărcare date copil:', error);
     }
   };
 
-  const loadActivities = async (userId: string) => {
+  const loadActivities = async (orgId: string, locId: string) => {
     try {
-      const activitiesRef = collection(db, 'organizations', userId, 'locations', gradinitaId, 'activities');
+      const activitiesRef = collection(db, 'organizations', orgId, 'locations', locId, 'activities');
       const activitiesSnap = await getDocs(activitiesRef);
       
       const startOfMonth = new Date(selectedMonth + '-01');
@@ -150,7 +179,7 @@ export default function GrupaReportsPage() {
     }
   };
 
-  const calculateStatsForChild = async (userId: string, childCnp: string) => {
+  const calculateStatsForChild = async (orgId: string, locId: string, childCnp: string) => {
     try {
       const startDate = new Date(selectedMonth + '-01');
       const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
@@ -175,9 +204,9 @@ export default function GrupaReportsPage() {
       const attendanceRef = collection(
         db,
         'organizations',
-        userId,
+        orgId,
         'locations',
-        gradinitaId,
+        locId,
         'children',
         childCnp,
         'attendance'
@@ -202,9 +231,9 @@ export default function GrupaReportsPage() {
       const reportsRef = collection(
         db,
         'organizations',
-        userId,
+        orgId,
         'locations',
-        gradinitaId,
+        locId,
         'children',
         childCnp,
         'dailyReports'
@@ -327,11 +356,22 @@ export default function GrupaReportsPage() {
       <div className="bg-white shadow">
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <button
-            onClick={() => router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}`)}
+            onClick={async () => {
+              const user = auth.currentUser;
+              if (user) {
+                const educatoareRef = doc(db, 'educatoare', user.uid);
+                const educatoareSnap = await getDoc(educatoareRef);
+                if (educatoareSnap.exists()) {
+                  router.push('/dashboard-educatoare');
+                } else {
+                  router.push(`/gradinite/${gradinitaId}/grupe/${grupaId}`);
+                }
+              }
+            }}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
           >
             <ArrowLeft className="w-5 h-5" />
-            Înapoi la Grupă
+            Înapoi
           </button>
         </div>
       </div>

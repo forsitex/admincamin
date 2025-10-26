@@ -251,7 +251,6 @@ export const getSidebarConfig = (type: OrganizationType): SidebarItem[] => {
           icon: Palette,
           label: 'Activități',
           href: '/activities',
-          badge: 'Soon',
           color: 'text-pink-600',
           bgColor: 'bg-pink-50',
           hoverColor: 'hover:bg-pink-100'

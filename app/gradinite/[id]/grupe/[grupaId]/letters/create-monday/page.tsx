@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { 
   ArrowLeft,
   Plus,
@@ -23,8 +23,12 @@ interface Activity {
 export default function CreateMondayLetterPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const gradinitaId = params.id as string;
   const grupaId = params.grupaId as string;
+  
+  // Citește săptămâna din URL sau folosește săptămâna curentă
+  const selectedWeek = searchParams.get('week');
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -148,9 +152,15 @@ export default function CreateMondayLetterPage() {
       const user = auth.currentUser;
       if (!user) return;
 
-      const now = new Date();
-      const weekNumber = getWeekNumber(now);
-      const weekId = `${now.getFullYear()}-W${weekNumber}`;
+      // Folosește săptămâna selectată sau calculează săptămâna curentă
+      let weekId: string;
+      if (selectedWeek) {
+        weekId = selectedWeek;
+      } else {
+        const now = new Date();
+        const weekNumber = getWeekNumber(now);
+        weekId = `${now.getFullYear()}-W${weekNumber}`;
+      }
       const letterId = `${weekId}-monday`;
 
       await setDoc(
@@ -173,7 +183,8 @@ export default function CreateMondayLetterPage() {
           anunturi,
           generatedContent,
           publishedAt: serverTimestamp(),
-          publishedBy: user.email || 'Educatoare'
+          publishedBy: user.email || 'Educatoare',
+          isPlanned: !!selectedWeek // Flag pentru a marca dacă e planificare în avans
         }
       );
 

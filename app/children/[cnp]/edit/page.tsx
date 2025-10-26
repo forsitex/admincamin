@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
+import { getOrgAndLocation } from '@/lib/firebase-helpers';
 import Step1GradinitaGrupa from '@/components/children/Step1GradinitaGrupa';
 import Step2DateCopil from '@/components/children/Step2DateCopil';
 import Step3Parinte1 from '@/components/children/Step3Parinte1';
@@ -85,7 +86,10 @@ export default function EditChildPage() {
       }
 
       // Încarcă toate grădinițele
-      const locationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const orgData = await getOrgAndLocation();
+      if (!orgData) return;
+
+      const locationsRef = collection(db, 'organizations', orgData.organizationId, 'locations');
       const locationsSnap = await getDocs(locationsRef);
       const locationsData = locationsSnap.docs.map(doc => ({
         id: doc.id,
@@ -98,7 +102,7 @@ export default function EditChildPage() {
       let foundLocationId = '';
 
       for (const location of locationsData) {
-        const childRef = doc(db, 'organizations', user.uid, 'locations', location.id, 'children', cnp);
+        const childRef = doc(db, 'organizations', orgData.organizationId, 'locations', location.id, 'children', cnp);
         const childSnap = await getDoc(childRef);
         
         if (childSnap.exists()) {
@@ -178,7 +182,10 @@ export default function EditChildPage() {
       if (!user || !locationId) return;
 
       // Actualizează copilul în Firebase
-      const childRef = doc(db, 'organizations', user.uid, 'locations', locationId, 'children', cnp);
+      const orgData = await getOrgAndLocation(locationId);
+      if (!orgData) return;
+
+      const childRef = doc(db, 'organizations', orgData.organizationId, 'locations', locationId, 'children', cnp);
       
       await updateDoc(childRef, {
         ...formData,

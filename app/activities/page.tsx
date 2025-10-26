@@ -16,7 +16,8 @@ import {
   Filter
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
-import { collection, getDocs, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { getOrgAndLocation } from '@/lib/firebase-helpers';
 
 export default function ActivitiesPage() {
   const router = useRouter();
@@ -38,13 +39,25 @@ export default function ActivitiesPage() {
         return;
       }
 
+      // Obține organizationId (funcționează pentru admin și educatoare)
+      const orgData = await getOrgAndLocation();
+      if (!orgData) {
+        router.push('/login');
+        return;
+      }
+
       // Încarcă grupe
-      const locationsRef = collection(db, 'organizations', user.uid, 'locations');
+      const locationsRef = collection(db, 'organizations', orgData.organizationId, 'locations');
       const locationsSnap = await getDocs(locationsRef);
-      const locationsData = locationsSnap.docs.map(doc => ({
+      let locationsData = locationsSnap.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as any[];
+
+      // Dacă e educatoare, filtrează doar locația ei
+      if (orgData.locationId) {
+        locationsData = locationsData.filter(loc => loc.id === orgData.locationId);
+      }
 
       let allGrupe: any[] = [];
       locationsData.forEach((location: any) => {
@@ -60,7 +73,7 @@ export default function ActivitiesPage() {
       // Încarcă activități
       let allActivities: any[] = [];
       for (const location of locationsData) {
-        const activitiesRef = collection(db, 'organizations', user.uid, 'locations', location.id, 'activities');
+        const activitiesRef = collection(db, 'organizations', orgData.organizationId, 'locations', location.id, 'activities');
         const activitiesQuery = query(activitiesRef, orderBy('data', 'desc'));
         const activitiesSnap = await getDocs(activitiesQuery);
         
@@ -96,7 +109,10 @@ export default function ActivitiesPage() {
       const user = auth.currentUser;
       if (!user) return;
 
-      await deleteDoc(doc(db, 'organizations', user.uid, 'locations', locationId, 'activities', activityId));
+      const orgData = await getOrgAndLocation(locationId);
+      if (!orgData) return;
+
+      await deleteDoc(doc(db, 'organizations', orgData.organizationId, 'locations', locationId, 'activities', activityId));
       alert('✅ Activitate ștearsă cu succes!');
       loadData();
     } catch (error) {

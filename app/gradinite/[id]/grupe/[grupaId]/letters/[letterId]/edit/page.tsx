@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getOrgAndLocation } from '@/lib/firebase-helpers';
 
 interface Activity {
   zi: string;
@@ -60,12 +61,19 @@ export default function EditLetterPage() {
         return;
       }
 
+      // Obține organizationId și locationId (funcționează pentru admin și educatoare)
+      const orgData = await getOrgAndLocation(gradinitaId);
+      if (!orgData) {
+        router.push('/login');
+        return;
+      }
+
       const letterRef = doc(
         db,
         'organizations',
-        user.uid,
+        orgData.organizationId,
         'locations',
-        gradinitaId,
+        orgData.locationId,
         'weeklyLetters',
         letterId
       );
@@ -159,13 +167,17 @@ export default function EditLetterPage() {
       const user = auth.currentUser;
       if (!user) return;
 
+      // Obține organizationId și locationId
+      const orgData = await getOrgAndLocation(gradinitaId);
+      if (!orgData) return;
+
       await updateDoc(
         doc(
           db,
           'organizations',
-          user.uid,
+          orgData.organizationId,
           'locations',
-          gradinitaId,
+          orgData.locationId,
           'weeklyLetters',
           letterId
         ),
