@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users, FileText, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users, FileText, Trash2, Loader2, BedDouble } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, deleteDoc, collection, query, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -205,6 +205,13 @@ export default function CaminDetailsPage() {
                   <p className="text-gray-500 mt-1 text-sm">{camin.address}</p>
                 </div>
               </div>
+              <Link
+                href={`/camine/${caminId}/rooms`}
+                className="flex items-center gap-2 px-4 py-2 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition text-sm"
+              >
+                <BedDouble className="w-4 h-4" />
+                Distribuție Camere
+              </Link>
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
