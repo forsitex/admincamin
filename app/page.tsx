@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -97,14 +96,6 @@ export default function HomePage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <Link
-              href="/register"
-              className="text-xs text-gray-500 hover:text-[#c9a96e] transition"
-            >
-              Nu ai cont? Înregistrează-te
-            </Link>
-          </div>
         </div>
 
         <p className="text-center text-white/30 text-xs mt-6">
