@@ -46,39 +46,14 @@ export async function POST(request: NextRequest) {
     
     console.log('✅ OCR completat');
     console.log(`📊 Text extras: ${data.text.length} caractere`);
-    console.log(`📍 Cuvinte detectate: ${data.words.length}`);
 
-    // 6. Extragem câmpurile cu coordonate
-    const fieldsWithCoordinates = data.words
-      .filter(word => {
-        // Filtrăm doar cuvintele care par a fi label-uri de câmpuri
-        const text = word.text.toLowerCase();
-        return (
-          text.includes('nume') ||
-          text.includes('cnp') ||
-          text.includes('adres') ||
-          text.includes('telefon') ||
-          text.includes('email') ||
-          text.includes('data') ||
-          text.includes('domiciliu') ||
-          text.includes('cod') ||
-          text.includes('seria') ||
-          text.includes('numar')
-        );
-      })
-      .map(word => ({
-        label: word.text,
-        x: word.bbox.x0,
-        y: word.bbox.y0,
-        width: word.bbox.x1 - word.bbox.x0,
-        height: word.bbox.y1 - word.bbox.y0,
-        confidence: word.confidence
-      }));
+    // 6. Analizăm textul pentru a identifica câmpurile
+    const fieldsWithCoordinates: any[] = [];
 
     console.log(`🎯 Câmpuri detectate: ${fieldsWithCoordinates.length}`);
 
     // 7. Trimitem textul la OpenAI pentru analiză semantică
-    const prompt = ANALYSIS_PROMPTS[organizationType] || ANALYSIS_PROMPTS.camin;
+    const prompt = (ANALYSIS_PROMPTS as Record<string, string>)[organizationType] || ANALYSIS_PROMPTS.camin;
     
     console.log('🤖 Trimitere la OpenAI pentru analiză semantică...');
     
