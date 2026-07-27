@@ -259,6 +259,8 @@ export default function RoomsPage() {
                         key={room.id}
                         href={`/camine/${caminId}/rooms/${room.id}`}
                         className="block"
+                        onMouseEnter={(e) => showRoomTooltip(e, room, roomRes)}
+                        onMouseLeave={hideRoomTooltip}
                       >
                         <div
                           className={`w-20 h-20 rounded-xl flex flex-col items-center justify-center transition-all duration-150 hover:scale-105 hover:shadow-xl cursor-pointer ${statusStyles[status]}`}
@@ -296,6 +298,52 @@ export default function RoomsPage() {
           </div>
         )}
       </div>
+
+      {/* Tooltip rezidenți */}
+      <div
+        id="room-tooltip"
+        className="fixed z-50 hidden bg-[#1e293b] border border-white/10 rounded-xl p-3 min-w-[220px] max-w-[300px] shadow-2xl pointer-events-none"
+      />
     </div>
   );
+}
+
+function showRoomTooltip(e: React.MouseEvent, room: Room, residents: Resident[]) {
+  const tooltip = document.getElementById('room-tooltip');
+  if (!tooltip) return;
+
+  if (residents.length === 0) {
+    tooltip.innerHTML = '<p style="color:rgba(255,255,255,.5);font-size:12px;text-align:center;padding:4px 0;">Niciun rezident alocat</p>';
+  } else {
+    let html = '<p style="color:#c9a96e;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">Camera ' + room.roomNumber + ' — ' + residents.length + ' rezident' + (residents.length !== 1 ? 'i' : '') + '</p>';
+    html += '<div style="display:flex;flex-direction:column;gap:5px;">';
+    residents.forEach(r => {
+      html += '<span style="color:#fff;font-size:12px;font-weight:500;">' + r.beneficiarNumeComplet + '</span>';
+    });
+    html += '</div>';
+    tooltip.innerHTML = html;
+  }
+
+  tooltip.style.display = 'block';
+  positionTooltip(e, tooltip);
+}
+
+function hideRoomTooltip() {
+  const tooltip = document.getElementById('room-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
+}
+
+function positionTooltip(e: React.MouseEvent, tooltip: HTMLElement) {
+  const margin = 12;
+  let x = e.clientX + margin;
+  let y = e.clientY + margin;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+  requestAnimationFrame(() => {
+    const rect = tooltip.getBoundingClientRect();
+    if (rect.right > window.innerWidth - margin) x = e.clientX - rect.width - margin;
+    if (rect.bottom > window.innerHeight - margin) y = e.clientY - rect.height - margin;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  });
 }
