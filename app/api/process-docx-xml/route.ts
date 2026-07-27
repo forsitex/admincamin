@@ -167,7 +167,7 @@ Creează mapping-ul pentru înlocuiri.`
     console.log('✅ DOCX generat cu succes!');
 
     // 9. Returnăm
-    return new NextResponse(finalBuffer, {
+    return new NextResponse(new Uint8Array(finalBuffer), {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Disposition': `attachment; filename="${file.name.replace('.docx', '')}_completat.docx"`,
