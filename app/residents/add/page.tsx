@@ -302,7 +302,7 @@ export default function AddResidentPage() {
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white shadow">
-        <div className="container mx-auto px-4 sm:px-6 py-4">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-4">
           <button
             onClick={() => router.push('/dashboard')}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition text-sm sm:text-base"
@@ -315,7 +315,7 @@ export default function AddResidentPage() {
 
       {/* Progress Bar */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-4 sm:py-6">
           {/* Desktop Progress */}
           <div className="hidden md:flex items-center justify-between">
             {STEPS.map((step, index) => (
@@ -372,8 +372,8 @@ export default function AddResidentPage() {
       </div>
 
       {/* Form Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <div className="max-w-none mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">

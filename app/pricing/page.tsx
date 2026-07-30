@@ -54,7 +54,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       {/* Header */}
       <div className="bg-white shadow">
-        <div className="container mx-auto px-4 sm:px-6 py-6">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-6">
           <Link
             href="/dashboard-new"
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
@@ -66,7 +66,7 @@ export default function PricingPage() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-16">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
             Alege Planul Potrivit

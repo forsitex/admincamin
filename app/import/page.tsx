@@ -299,7 +299,7 @@ export default function ImportPage() {
     <div className="min-h-screen bg-[#f5f5f0]">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 sm:px-6 py-5">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
@@ -327,7 +327,7 @@ export default function ImportPage() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-8">
         {totalImported > 0 && (
           <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
             <CheckCircle className="w-6 h-6 text-green-600" />

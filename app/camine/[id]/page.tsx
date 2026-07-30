@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users, FileText, Trash2, Loader2, BedDouble } from 'lucide-react';
+import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users, FileText, Trash2, Loader2, BedDouble, LogOut } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, deleteDoc, collection, query, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -20,6 +20,10 @@ export default function CaminDetailsPage() {
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
+  const [externingId, setExterningId] = useState<string | null>(null);
+  const [showExternModal, setShowExternModal] = useState<string | null>(null);
+  const [externDate, setExternDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showExternati, setShowExternati] = useState(false);
   
   const [editData, setEditData] = useState({
     reprezentantName: '',
@@ -137,6 +141,30 @@ export default function CaminDetailsPage() {
     setEditMode(false);
   };
 
+  const handleExternResident = async (residentCnp: string) => {
+    setExterningId(residentCnp);
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      await updateDoc(doc(db, 'organizations', user.uid, 'locations', caminId, 'residents', residentCnp), {
+        status: 'externat',
+        dataExternare: externDate,
+        roomId: '',
+        roomNumber: '',
+      });
+
+      await loadResidents();
+      setShowExternModal(null);
+      console.log('✅ Rezident externat cu succes');
+    } catch (error) {
+      console.error('❌ Eroare externare:', error);
+      alert('Eroare la externare. Încearcă din nou.');
+    } finally {
+      setExterningId(null);
+    }
+  };
+
   const handleDeleteAllResidents = async () => {
     if (!confirm(`Sigur vrei să ștergi TOȚI cei ${residents.length} rezidenți din ${camin.name}?`)) return;
 
@@ -179,7 +207,7 @@ export default function CaminDetailsPage() {
     <div className="min-h-screen bg-[#f5f5f0]">
       {/* Header */}
       <div className="bg-[#1a2b4a]">
-        <div className="container mx-auto px-4 sm:px-6 py-5">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-5">
           <button
             onClick={() => router.push('/dashboard-new')}
             className="flex items-center gap-2 text-white/70 hover:text-white transition"
@@ -191,8 +219,8 @@ export default function CaminDetailsPage() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-8">
-        <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-8">
+        <div className="max-w-none mx-auto space-y-6">
           {/* Detalii Cămin */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-start justify-between mb-6">
@@ -205,13 +233,28 @@ export default function CaminDetailsPage() {
                   <p className="text-gray-500 mt-1 text-sm">{camin.address}</p>
                 </div>
               </div>
-              <Link
-                href={`/camine/${caminId}/rooms`}
-                className="flex items-center gap-2 px-4 py-2 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition text-sm"
-              >
-                <BedDouble className="w-4 h-4" />
-                Distribuție Camere
-              </Link>
+              <div className="flex items-center gap-2">
+                {residents.filter(r => r.status === 'externat').length > 0 && (
+                  <button
+                    onClick={() => setShowExternati(!showExternati)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition text-sm ${
+                      showExternati
+                        ? 'bg-[#c9a96e] text-white'
+                        : 'bg-[#c9a96e]/10 text-[#c9a96e] hover:bg-[#c9a96e]/20'
+                    }`}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Externați ({residents.filter(r => r.status === 'externat').length})
+                  </button>
+                )}
+                <Link
+                  href={`/camine/${caminId}/rooms`}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition text-sm"
+                >
+                  <BedDouble className="w-4 h-4" />
+                  Distribuție Camere
+                </Link>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
@@ -388,8 +431,25 @@ export default function CaminDetailsPage() {
                         <Link href={`/residents/${resident.cnp}`} className="hover:text-[#c9a96e] transition">
                           <h3 className="text-base font-bold text-[#1a2b4a]">{resident.beneficiarNumeComplet}</h3>
                           <p className="text-xs text-gray-500">CNP: {resident.cnp}</p>
+                          {resident.status === 'externat' && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-gray-200 text-gray-600 text-xs font-medium rounded-full">
+                              Externat · {resident.dataExternare}
+                            </span>
+                          )}
                         </Link>
                         <div className="flex items-center gap-2">
+                          {resident.status !== 'externat' && (
+                            <button
+                              onClick={() => {
+                                setShowExternModal(resident.cnp);
+                                setExternDate(new Date().toISOString().split('T')[0]);
+                              }}
+                              className="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg font-medium hover:bg-orange-100 transition text-xs flex items-center gap-1"
+                            >
+                              <LogOut className="w-3.5 h-3.5" />
+                              Externare
+                            </button>
+                          )}
                           <Link
                             href={`/residents/${resident.cnp}`}
                             className="px-3 py-1.5 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition text-xs"
@@ -422,8 +482,97 @@ export default function CaminDetailsPage() {
                 </div>
               )}
           </div>
+
+          {/* Lista Externați */}
+          {showExternati && (
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-[#1a2b4a] flex items-center gap-2">
+                  <LogOut className="w-5 h-5 text-[#c9a96e]" />
+                  Rezidenți Externați ({residents.filter(r => r.status === 'externat').length})
+                </h2>
+                <button
+                  onClick={() => setShowExternati(false)}
+                  className="text-gray-400 hover:text-gray-600 text-sm"
+                >
+                  Ascunde
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {residents.filter(r => r.status === 'externat').map((resident) => (
+                  <div
+                    key={resident.cnp}
+                    className="bg-gray-50 rounded-lg p-5 border border-gray-200 opacity-75"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <Link href={`/residents/${resident.cnp}`} className="hover:text-[#c9a96e] transition">
+                        <h3 className="text-base font-bold text-gray-700">{resident.beneficiarNumeComplet}</h3>
+                        <p className="text-xs text-gray-400">CNP: {resident.cnp}</p>
+                      </Link>
+                      <span className="px-2 py-1 bg-gray-200 text-gray-600 text-xs font-medium rounded-full">
+                        Externat · {resident.dataExternare}
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-sm text-gray-500">
+                      {resident.dataInternare && (
+                        <p><span className="font-medium">Internat:</span> {resident.dataInternare}</p>
+                      )}
+                      {resident.gradDependenta && (
+                        <p><span className="font-medium">Grad:</span> {resident.gradDependenta}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Modal Externare */}
+      {showExternModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="font-bold text-[#1a2b4a]">Externare Rezident</h3>
+              <button
+                onClick={() => setShowExternModal(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <p className="text-sm text-gray-600">
+                Sigur dorești să externezi rezidentul <strong>{residents.find(r => r.cnp === showExternModal)?.beneficiarNumeComplet}</strong>?
+                Rezidentul va fi scos din cameră și marcat ca externat.
+              </p>
+              <div>
+                <label className="block text-xs text-gray-500 uppercase tracking-wider font-medium mb-1.5">
+                  Data externării
+                </label>
+                <input
+                  type="date"
+                  value={externDate}
+                  onChange={(e) => setExternDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#1a2b4a] focus:ring-2 focus:ring-[#1a2b4a]/10 transition text-sm"
+                />
+              </div>
+              <button
+                onClick={() => handleExternResident(showExternModal)}
+                disabled={externingId === showExternModal}
+                className="w-full px-4 py-2.5 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2"
+              >
+                {externingId === showExternModal ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Se procesează...</>
+                ) : (
+                  <><LogOut className="w-4 h-4" /> Confirmă Externarea</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

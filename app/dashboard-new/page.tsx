@@ -148,7 +148,7 @@ export default function DashboardNewPage() {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
         {/* Header */}
         <div className="bg-white shadow">
-          <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="max-w-none mx-auto px-4 sm:px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
@@ -168,8 +168,8 @@ export default function DashboardNewPage() {
         </div>
 
         {/* Content */}
-        <div className="container mx-auto px-4 sm:px-6 py-12">
-          <div className="max-w-2xl mx-auto">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-12">
+          <div className="max-w-none mx-auto">
             {/* Empty State Card */}
             <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-12 text-center">
               <div className={`w-24 h-24 ${emptyState.bgColor} rounded-full flex items-center justify-center mx-auto mb-6`}>
@@ -238,7 +238,7 @@ export default function DashboardNewPage() {
       <div className="flex-1 bg-[#f5f5f0]">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 sm:px-6 py-5">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-[#1a2b4a]">
@@ -287,7 +287,7 @@ export default function DashboardNewPage() {
       </div>
 
       {/* Content - Dashboard Cămin */}
-      <div className="container mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-8">
         <CaminDashboard locations={camine} onDelete={handleDeleteCamin} />
       </div>
       </div>

@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { auth, db } from '@/lib/firebase';
-import { collection, getDocs, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ROOMS_BY_LOCATION } from '@/lib/rooms-data';
-import { ArrowLeft, Building, Bed, Users, Search, Plus } from 'lucide-react';
+import { ArrowLeft, Building, Bed, Users, Search, Plus, Settings, Trash2, X, Minus, Loader2 } from 'lucide-react';
 
 interface Room {
   id: string;
@@ -33,6 +33,15 @@ export default function RoomsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showAddRoomModal, setShowAddRoomModal] = useState(false);
+  const [editRoomId, setEditRoomId] = useState<string | null>(null);
+  const [newRoomNumber, setNewRoomNumber] = useState('');
+  const [newRoomCapacity, setNewRoomCapacity] = useState(2);
+  const [newRoomFloor, setNewRoomFloor] = useState('Parter');
+  const [newRoomIsolator, setNewRoomIsolator] = useState(false);
+  const [savingRoom, setSavingRoom] = useState(false);
+  const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
+  const [showManageModal, setShowManageModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -102,6 +111,97 @@ export default function RoomsPage() {
     return 'occupied';
   };
 
+  const handleSaveRoom = async () => {
+    const user = auth.currentUser;
+    if (!user || !newRoomNumber) return;
+
+    setSavingRoom(true);
+    try {
+      const roomId = `room-${newRoomNumber}`;
+      const roomData = {
+        roomNumber: newRoomNumber,
+        capacity: newRoomCapacity,
+        floor: newRoomFloor,
+        isIsolator: newRoomIsolator,
+        createdAt: Date.now(),
+      };
+
+      await setDoc(doc(db, 'organizations', user.uid, 'locations', caminId, 'rooms', roomId), roomData, { merge: true });
+
+      // Update local state
+      const existing = rooms.find(r => r.id === roomId);
+      if (existing) {
+        setRooms(rooms.map(r => r.id === roomId ? { ...r, ...roomData } : r));
+      } else {
+        setRooms([...rooms, { id: roomId, ...roomData } as Room].sort((a, b) => parseInt(a.roomNumber) - parseInt(b.roomNumber)));
+      }
+
+      setShowAddRoomModal(false);
+      setEditRoomId(null);
+      setNewRoomNumber('');
+      setNewRoomCapacity(2);
+      setNewRoomFloor('Parter');
+      setNewRoomIsolator(false);
+    } catch (error) {
+      console.error('Error saving room:', error);
+      alert('Eroare la salvarea camerei');
+    } finally {
+      setSavingRoom(false);
+    }
+  };
+
+  const handleEditRoom = (room: Room) => {
+    setEditRoomId(room.id);
+    setNewRoomNumber(room.roomNumber);
+    setNewRoomCapacity(room.capacity);
+    setNewRoomFloor(room.floor);
+    setNewRoomIsolator(room.isIsolator || false);
+    setShowAddRoomModal(true);
+  };
+
+  const handleDeleteRoom = async (roomId: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const roomRes = getRoomResidents(roomId);
+    if (roomRes.length > 0) {
+      alert(`Nu poți șterge camera — are ${roomRes.length} rezidenți alocați. Mută rezidenții întâi.`);
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, 'organizations', user.uid, 'locations', caminId, 'rooms', roomId));
+      setRooms(rooms.filter(r => r.id !== roomId));
+      setDeleteRoomId(null);
+    } catch (error) {
+      console.error('Error deleting room:', error);
+      alert('Eroare la ștergerea camerei');
+    }
+  };
+
+  const handleCapacityChange = async (roomId: string, newCapacity: number) => {
+    const user = auth.currentUser;
+    if (!user || newCapacity < 1) return;
+
+    const room = rooms.find(r => r.id === roomId);
+    if (!room) return;
+
+    const occupied = getRoomResidents(roomId).length;
+    if (newCapacity < occupied) {
+      alert(`Nu poți reduce capacitatea sub ${occupied} — sunt ${occupied} rezidenți în cameră.`);
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'organizations', user.uid, 'locations', caminId, 'rooms', roomId), {
+        capacity: newCapacity,
+      });
+      setRooms(rooms.map(r => r.id === roomId ? { ...r, capacity: newCapacity } : r));
+    } catch (error) {
+      console.error('Error updating capacity:', error);
+    }
+  };
+
   const filteredRooms = rooms.filter(room => {
     const status = getRoomStatus(room);
     if (filterStatus !== 'all' && status !== filterStatus) return false;
@@ -142,7 +242,7 @@ export default function RoomsPage() {
     <div className="min-h-screen bg-[#f5f5f0]">
       {/* Header */}
       <div className="bg-[#1a2b4a]">
-        <div className="container mx-auto px-4 sm:px-6 py-5">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
@@ -157,11 +257,34 @@ export default function RoomsPage() {
                 <p className="text-white/40 text-xs">{rooms.length} camere · {residents.length} rezidenți</p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowManageModal(true)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 text-white rounded-lg text-sm font-medium hover:bg-white/20 transition"
+              >
+                <Settings className="w-4 h-4" />
+                Gestionează
+              </button>
+              <button
+                onClick={() => {
+                  setEditRoomId(null);
+                  setNewRoomNumber('');
+                  setNewRoomCapacity(2);
+                  setNewRoomFloor('Parter');
+                  setNewRoomIsolator(false);
+                  setShowAddRoomModal(true);
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-[#c9a96e] text-white rounded-lg text-sm font-medium hover:bg-[#b8985e] transition"
+              >
+                <Plus className="w-4 h-4" />
+                Adaugă Cameră
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-8">
         {/* Filtre */}
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6">
           <div className="flex flex-wrap items-center gap-4">
@@ -298,6 +421,194 @@ export default function RoomsPage() {
           </div>
         )}
       </div>
+
+      {/* Modal: Adaugă / Editează Cameră */}
+      {showAddRoomModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="font-bold text-[#1a2b4a]">
+                {editRoomId ? `Editează Camera ${newRoomNumber}` : 'Adaugă Cameră Nouă'}
+              </h3>
+              <button onClick={() => { setShowAddRoomModal(false); setEditRoomId(null); }} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-xs text-gray-500 uppercase tracking-wider font-medium mb-1.5">
+                  Număr cameră
+                </label>
+                <input
+                  type="text"
+                  value={newRoomNumber}
+                  onChange={(e) => setNewRoomNumber(e.target.value)}
+                  disabled={!!editRoomId}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#1a2b4a] focus:ring-2 focus:ring-[#1a2b4a]/10 transition text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                  placeholder="ex: 15"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 uppercase tracking-wider font-medium mb-1.5">
+                  Capacitate (paturi)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={newRoomCapacity}
+                  onChange={(e) => setNewRoomCapacity(parseInt(e.target.value) || 1)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#1a2b4a] focus:ring-2 focus:ring-[#1a2b4a]/10 transition text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 uppercase tracking-wider font-medium mb-1.5">
+                  Etaj
+                </label>
+                <select
+                  value={newRoomFloor}
+                  onChange={(e) => setNewRoomFloor(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#1a2b4a] focus:ring-2 focus:ring-[#1a2b4a]/10 transition text-sm"
+                >
+                  <option value="Parter">Parter</option>
+                  <option value="Etaj 1">Etaj 1</option>
+                  <option value="Etaj 2">Etaj 2</option>
+                  <option value="Etaj 3">Etaj 3</option>
+                  <option value="Mansardă">Mansardă</option>
+                </select>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newRoomIsolator}
+                  onChange={(e) => setNewRoomIsolator(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-[#1a2b4a] focus:ring-[#1a2b4a]/20"
+                />
+                <span className="text-sm text-gray-700">Izolator</span>
+              </label>
+              <button
+                onClick={handleSaveRoom}
+                disabled={savingRoom || !newRoomNumber}
+                className="w-full px-4 py-2.5 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition disabled:opacity-50 text-sm flex items-center justify-center gap-2"
+              >
+                {savingRoom ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Se salvează...</>
+                ) : (
+                  <>{editRoomId ? 'Salvează modificările' : 'Adaugă Camera'}</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Gestionează Camere */}
+      {showManageModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="font-bold text-[#1a2b4a]">Gestionează Camere ({rooms.length})</h3>
+              <button onClick={() => { setShowManageModal(false); setDeleteRoomId(null); }} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-4 flex-1">
+              <div className="space-y-2">
+                {rooms.map(room => {
+                  const occupied = getRoomResidents(room.id).length;
+                  return (
+                    <div
+                      key={room.id}
+                      className="flex items-center justify-between p-3 bg-[#f5f5f0] rounded-lg border border-gray-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#1a2b4a] rounded-lg flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">{room.roomNumber}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-[#1a2b4a]">
+                            Camera {room.roomNumber} · {room.floor}
+                            {room.isIsolator && (
+                              <span className="ml-2 px-1.5 py-0.5 bg-[#c9a96e]/20 text-[#c9a96e] text-[10px] font-medium rounded">IZOLATOR</span>
+                            )}
+                          </p>
+                          <p className="text-xs text-gray-500">{occupied}/{room.capacity} paturi ocupate</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {/* Capacitate +/- */}
+                        <div className="flex items-center gap-1 bg-white rounded-lg border border-gray-200">
+                          <button
+                            onClick={() => handleCapacityChange(room.id, room.capacity - 1)}
+                            disabled={room.capacity <= 1 || occupied >= room.capacity}
+                            className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-l-lg disabled:opacity-30 transition"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="text-sm font-bold text-[#1a2b4a] w-6 text-center">{room.capacity}</span>
+                          <button
+                            onClick={() => handleCapacityChange(room.id, room.capacity + 1)}
+                            disabled={room.capacity >= 10}
+                            className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-r-lg disabled:opacity-30 transition"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => handleEditRoom(room)}
+                          className="px-2.5 py-1.5 bg-[#1a2b4a]/10 text-[#1a2b4a] rounded-lg text-xs font-medium hover:bg-[#1a2b4a]/20 transition"
+                        >
+                          Editează
+                        </button>
+                        {deleteRoomId === room.id ? (
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleDeleteRoom(room.id)}
+                              className="px-2.5 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 transition"
+                            >
+                              Confirmă
+                            </button>
+                            <button
+                              onClick={() => setDeleteRoomId(null)}
+                              className="px-2.5 py-1.5 bg-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-300 transition"
+                            >
+                              Anulează
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setDeleteRoomId(room.id)}
+                            className="px-2.5 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 transition flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setShowManageModal(false);
+                  setEditRoomId(null);
+                  setNewRoomNumber('');
+                  setNewRoomCapacity(2);
+                  setNewRoomFloor('Parter');
+                  setNewRoomIsolator(false);
+                  setShowAddRoomModal(true);
+                }}
+                className="w-full px-4 py-2.5 bg-[#c9a96e] text-white rounded-lg font-medium hover:bg-[#b8985e] transition text-sm flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Adaugă Cameră Nouă
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tooltip rezidenți */}
       <div

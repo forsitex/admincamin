@@ -220,7 +220,7 @@ export default function RoomDetailPage() {
     <div className="min-h-screen bg-[#f5f5f0]">
       {/* Header */}
       <div className="bg-[#1a2b4a]">
-        <div className="container mx-auto px-4 sm:px-6 py-5">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
@@ -246,8 +246,8 @@ export default function RoomDetailPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 py-8">
-        <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-8">
+        <div className="max-w-none mx-auto space-y-6">
           {/* Info cameră */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

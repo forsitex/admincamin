@@ -134,7 +134,7 @@ export default function ResidentDetailPage() {
     <div className="min-h-screen bg-[#f5f5f0]">
       {/* Header */}
       <div className="bg-[#1a2b4a]">
-        <div className="container mx-auto px-4 sm:px-6 py-5">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-center justify-between">
             <button
               onClick={() => router.push(`/camine/${resident.caminId}`)}
@@ -176,8 +176,8 @@ export default function ResidentDetailPage() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-8">
-        <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-8">
+        <div className="max-w-none mx-auto space-y-6">
           {/* Nume rezident */}
           <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-[#c9a96e]">
             <div className="flex items-center gap-4">

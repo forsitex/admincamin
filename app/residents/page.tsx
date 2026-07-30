@@ -102,7 +102,7 @@ export default function ResidentsPage() {
     <div className="min-h-screen bg-[#f5f5f0]">
       {/* Header */}
       <div className="bg-[#1a2b4a]">
-        <div className="container mx-auto px-4 sm:px-6 py-5">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
@@ -122,7 +122,7 @@ export default function ResidentsPage() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-8">
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -195,7 +195,7 @@ export default function ResidentsPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filtered.map((resident) => (
-                    <tr key={resident.cnp} className="hover:bg-[#f5f5f0] transition">
+                    <tr key={`${resident.cnp}-${resident.caminId}`} className="hover:bg-[#f5f5f0] transition">
                       <td className="px-4 py-3">
                         <Link
                           href={`/residents/${resident.beneficiarCnp || resident.cnp}`}

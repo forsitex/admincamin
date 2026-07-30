@@ -73,7 +73,7 @@ export default function AddCaminPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Header */}
       <div className="bg-white shadow">
-        <div className="container mx-auto px-4 sm:px-6 py-4">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-4">
           <button
             onClick={() => router.push('/dashboard-new')}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
@@ -85,8 +85,8 @@ export default function AddCaminPage() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-12">
-        <div className="max-w-2xl mx-auto">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-12">
+        <div className="max-w-none mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8">
             {/* Icon */}
             <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">

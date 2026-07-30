@@ -152,8 +152,8 @@ function SuccessPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="container mx-auto px-6 py-12">
-        <div className="max-w-3xl mx-auto">
+      <div className="max-w-none mx-auto px-6 py-12">
+        <div className="max-w-none mx-auto">
           {/* Success Icon */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-24 h-24 bg-green-100 rounded-full mb-6 animate-bounce">
