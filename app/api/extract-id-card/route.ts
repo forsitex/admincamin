@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 // Citim key-ul din .env.local (local) sau process.env (Vercel)
 function getApiKey(): string {
   // Pe Vercel, variabilele de mediu sunt setate în dashboard

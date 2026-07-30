@@ -68,6 +68,31 @@ export default function AddSmartResidentPage() {
   const [generatedDocs, setGeneratedDocs] = useState<GeneratedDoc[]>([]);
   const [genErrors, setGenErrors] = useState<string[]>([]);
 
+  // Compresie imagine cu canvas (max 1600px, JPEG quality 0.85)
+  const compressImage = (dataUrl: string, maxWidth: number = 1600): Promise<{ base64: string; dataUrl: string; mimeType: string }> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('Canvas context failed')); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        const base64 = compressedDataUrl.split(',')[1];
+        resolve({ base64, dataUrl: compressedDataUrl, mimeType: 'image/jpeg' });
+      };
+      img.onerror = () => reject(new Error('Eroare la încărcarea imaginii'));
+      img.src = dataUrl;
+    });
+  };
+
   // Upload
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'beneficiar' | 'apartinator') => {
     const file = e.target.files?.[0];
@@ -80,21 +105,29 @@ export default function AddSmartResidentPage() {
       const reader = new FileReader();
       reader.onload = async (event) => {
         const result = event.target?.result as string;
-        const base64 = result.split(',')[1];
-        const mimeType = file.type;
-
-        if (type === 'beneficiar') {
-          setBeneficiarImage(result);
-        } else {
-          setApartinatorImage(result);
-        }
 
         try {
+          // Compresiem imaginea înainte de trimitere
+          const { base64, dataUrl, mimeType } = await compressImage(result);
+
+          if (type === 'beneficiar') {
+            setBeneficiarImage(dataUrl);
+          } else {
+            setApartinatorImage(dataUrl);
+          }
+
           const resp = await fetch('/api/extract-id-card', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ image: base64, mimeType }),
           });
+
+          if (!resp.ok) {
+            const text = await resp.text();
+            setError(`Eroare server (${resp.status}): ${text.substring(0, 200)}`);
+            setLoading2(false);
+            return;
+          }
 
           const data = await resp.json();
 
