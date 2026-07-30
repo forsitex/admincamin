@@ -410,7 +410,7 @@ function SuccessPageContent() {
             </Link>
             
             <Link
-              href="/residents/add"
+              href="/residents/add-smart"
               className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-purple-600 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition"
             >
               Adaugă Alt Rezident

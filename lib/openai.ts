@@ -6,13 +6,29 @@
  */
 
 import OpenAI from 'openai';
+import fs from 'fs';
+import path from 'path';
 
-if (!process.env.OPENAI_API_KEY) {
-  console.warn('OPENAI_API_KEY lipsește din variabilele de mediu. Funcțiile AI nu vor fi disponibile.');
+// Citim key-ul direct din .env.local pentru a evita override-ul din variabilele de mediu globale
+function getApiKey(): string {
+  try {
+    const envPath = path.join(process.cwd(), '.env.local');
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    const match = envContent.match(/OPENAI_API_KEY=(.+)/);
+    return match ? match[1].trim() : '';
+  } catch {
+    return process.env.OPENAI_API_KEY || '';
+  }
+}
+
+const apiKey = getApiKey();
+
+if (!apiKey) {
+  console.warn('OPENAI_API_KEY lipsește. Funcțiile AI nu vor fi disponibile.');
 }
 
 export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'missing-key',
+  apiKey: apiKey || 'missing-key',
 });
 
 /**
