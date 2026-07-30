@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users, FileText, Trash2, Loader2, BedDouble, LogOut } from 'lucide-react';
+import { ArrowLeft, Building, User, Phone, Mail, Edit2, Save, X, Users, FileText, Trash2, Loader2, BedDouble, LogOut, UserCheck } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, deleteDoc, collection, query, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -24,6 +24,7 @@ export default function CaminDetailsPage() {
   const [showExternModal, setShowExternModal] = useState<string | null>(null);
   const [externDate, setExternDate] = useState(new Date().toISOString().split('T')[0]);
   const [showExternati, setShowExternati] = useState(false);
+  const externatiRef = useRef<HTMLDivElement>(null);
   
   const [editData, setEditData] = useState({
     reprezentantName: '',
@@ -165,6 +166,27 @@ export default function CaminDetailsPage() {
     }
   };
 
+  const handleReinternareResident = async (residentCnp: string) => {
+    setExterningId(residentCnp);
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      await updateDoc(doc(db, 'organizations', user.uid, 'locations', caminId, 'residents', residentCnp), {
+        status: '',
+        dataExternare: '',
+      });
+
+      await loadResidents();
+      console.log('✅ Rezident re-internat cu succes');
+    } catch (error) {
+      console.error('❌ Eroare re-internare:', error);
+      alert('Eroare la re-internare. Încearcă din nou.');
+    } finally {
+      setExterningId(null);
+    }
+  };
+
   const handleDeleteAllResidents = async () => {
     if (!confirm(`Sigur vrei să ștergi TOȚI cei ${residents.length} rezidenți din ${camin.name}?`)) return;
 
@@ -236,7 +258,15 @@ export default function CaminDetailsPage() {
               <div className="flex items-center gap-2">
                 {residents.filter(r => r.status === 'externat').length > 0 && (
                   <button
-                    onClick={() => setShowExternati(!showExternati)}
+                    onClick={() => {
+                      const newVal = !showExternati;
+                      setShowExternati(newVal);
+                      if (newVal) {
+                        setTimeout(() => {
+                          externatiRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                      }
+                    }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition text-sm ${
                       showExternati
                         ? 'bg-[#c9a96e] text-white'
@@ -485,7 +515,7 @@ export default function CaminDetailsPage() {
 
           {/* Lista Externați */}
           {showExternati && (
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div ref={externatiRef} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 scroll-mt-4">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-[#1a2b4a] flex items-center gap-2">
                   <LogOut className="w-5 h-5 text-[#c9a96e]" />
@@ -520,6 +550,19 @@ export default function CaminDetailsPage() {
                       {resident.gradDependenta && (
                         <p><span className="font-medium">Grad:</span> {resident.gradDependenta}</p>
                       )}
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <button
+                        onClick={() => handleReinternareResident(resident.cnp)}
+                        disabled={externingId === resident.cnp}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg font-medium hover:bg-green-100 transition text-xs disabled:opacity-50"
+                      >
+                        {externingId === resident.cnp ? (
+                          <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Se procesează...</>
+                        ) : (
+                          <><UserCheck className="w-3.5 h-3.5" /> Re-internare</>
+                        )}
+                      </button>
                     </div>
                   </div>
                 ))}
