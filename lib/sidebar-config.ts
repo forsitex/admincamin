@@ -9,6 +9,7 @@ import {
   Image, 
   Brain, 
   Bot,
+  Settings,
   type LucideIcon
 } from 'lucide-react';
 
@@ -120,7 +121,15 @@ export const getSidebarConfig = (_type: OrganizationType): SidebarItem[] => {
       bgColor: 'bg-purple-50',
       hoverColor: 'hover:bg-purple-100'
     },
-    ...aiItems
+    ...aiItems,
+    {
+      icon: Settings,
+      label: 'Setări',
+      href: '/settings',
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50',
+      hoverColor: 'hover:bg-gray-100'
+    }
   ];
 };
 

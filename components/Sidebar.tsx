@@ -51,7 +51,7 @@ export default function Sidebar({ company, userEmail, organizationType = 'camin'
                 {company?.name || 'Loading...'}
               </h2>
               <p className="text-white/40 text-xs truncate mt-1">
-                {userEmail}
+                {company?.adminName || userEmail}
               </p>
               <p className="text-[#c9a96e] text-xs font-medium mt-1 uppercase tracking-wider">
                 {orgTypeLabel}
