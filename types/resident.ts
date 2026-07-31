@@ -69,6 +69,10 @@ export interface Resident {
   escare?: string;
   stareGenerala?: string;
   
+  // Imagini buletine (base64 comprimat)
+  beneficiarImageBase64?: string;
+  apartinatorImageBase64?: string;
+  
   // Metadata
   dataInregistrare: number;
   contractGenerat: boolean;

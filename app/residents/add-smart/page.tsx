@@ -263,6 +263,8 @@ function AddSmartResidentInner() {
           durataNedeterminata,
           dataInregistrare: Date.now(),
           contractGenerat: true,
+          beneficiarImageBase64: beneficiarImage || undefined,
+          apartinatorImageBase64: apartinatorImage || undefined,
         };
 
         const residentRef = doc(db, 'organizations', user.uid, 'locations', caminId, 'residents', beneficiarData.cnp);

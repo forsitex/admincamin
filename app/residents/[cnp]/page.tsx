@@ -272,6 +272,38 @@ export default function ResidentDetailPage() {
               Înapoi la locație
             </Link>
           </div>
+
+          {/* Imagini Buletine */}
+          {(resident.beneficiarImageBase64 || resident.apartinatorImageBase64) && (
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <h2 className="text-sm font-bold text-[#1a2b4a] uppercase tracking-wider mb-4 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#c9a96e]" />
+                Imagini Buletine
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {resident.beneficiarImageBase64 && (
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Buletin Beneficiar</p>
+                    <img
+                      src={resident.beneficiarImageBase64}
+                      alt="Buletin beneficiar"
+                      className="w-full rounded-lg border border-gray-200"
+                    />
+                  </div>
+                )}
+                {resident.apartinatorImageBase64 && (
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Buletin Aparținător</p>
+                    <img
+                      src={resident.apartinatorImageBase64}
+                      alt="Buletin apartinator"
+                      className="w-full rounded-lg border border-gray-200"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
