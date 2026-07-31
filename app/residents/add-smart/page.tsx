@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -31,7 +31,7 @@ interface GeneratedDoc {
 
 type Step = 'beneficiar' | 'apartinator' | 'contract' | 'generare';
 
-export default function AddSmartResidentPage() {
+function AddSmartResidentInner() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -690,5 +690,13 @@ function ExtractedFields({ data, onChange }: { data: ExtractedData; onChange: (d
         </div>
       ))}
     </div>
+  );
+}
+
+export default function AddSmartResidentPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Se încarcă...</div>}>
+      <AddSmartResidentInner />
+    </Suspense>
   );
 }
