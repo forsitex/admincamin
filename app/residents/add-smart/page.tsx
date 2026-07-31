@@ -78,8 +78,8 @@ function AddSmartResidentInner() {
   const [generatedDocs, setGeneratedDocs] = useState<GeneratedDoc[]>([]);
   const [genErrors, setGenErrors] = useState<string[]>([]);
 
-  // Compresie imagine cu canvas (max 1600px, JPEG quality 0.85)
-  const compressImage = (dataUrl: string, maxWidth: number = 1600): Promise<{ base64: string; dataUrl: string; mimeType: string }> => {
+  // Compresie imagine cu canvas (max 1200px, JPEG quality 0.7)
+  const compressImage = (dataUrl: string, maxWidth: number = 1200): Promise<{ base64: string; dataUrl: string; mimeType: string }> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
@@ -94,7 +94,7 @@ function AddSmartResidentInner() {
         const ctx = canvas.getContext('2d');
         if (!ctx) { reject(new Error('Canvas context failed')); return; }
         ctx.drawImage(img, 0, 0, width, height);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
         const base64 = compressedDataUrl.split(',')[1];
         resolve({ base64, dataUrl: compressedDataUrl, mimeType: 'image/jpeg' });
       };
