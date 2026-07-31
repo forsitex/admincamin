@@ -105,6 +105,37 @@ const PERSONAL_DATA = {
     },
     data_contract: '12.07.2026',
   },
+  fortunei: {
+    beneficiar: {
+      nume: ['FLOREA EUGENIA'],
+      cnp: '2481225400874',
+      ci_serie: 'RT',
+      ci_numar: '796919',
+      ci_data: '09.10.2012',
+      ci_eliberat_de: 'SPCEP Sector 5',
+      adresa: 'Mun. București, Sector 5, Drm. Dârvari, nr.20',
+    },
+    apartinator: {
+      nume: ['FLOREA DOINA-MARIA', 'FLOREA DOINA - MARIA'],
+      cnp: '2851006460160',
+      ci_serie: 'RZ',
+      ci_numar: '037720',
+      ci_data: '22.09.2022',
+      ci_eliberat_de: 'SPCEP Sector 5',
+      adresa: 'Mun. București, Sector 5, Drm. Dârvari, nr.20',
+    },
+    numere: {
+      contract: '263',
+      cerere: '254',
+      decizie: '262',
+      gdpr: '261',
+      bunuri: '264',
+      rof: '266',
+      pv: '265',
+      primarie: '267',
+    },
+    data_contract: '07.06.2026',
+  },
 };
 
 // Generează lista de înlocuiri pentru o locație
@@ -265,7 +296,7 @@ function cleanDocx(inputPath, outputPath, replacements) {
 }
 
 // === MAIN ===
-const caminFolders = ['cetinei', 'clinceni', 'orhideelor'];
+const caminFolders = ['cetinei', 'clinceni', 'orhideelor', 'fortunei'];
 let grandTotal = 0;
 
 for (const folder of caminFolders) {

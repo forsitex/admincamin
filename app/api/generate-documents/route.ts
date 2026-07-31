@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Template-urile per locație — fallback la folderul root pentru compatibilitate
-const VALID_CAMIN_IDS = ['cetinei', 'clinceni', 'orhideelor'];
+const VALID_CAMIN_IDS = ['cetinei', 'clinceni', 'orhideelor', 'fortunei'];
 
 interface ResidentData {
   // Beneficiar
