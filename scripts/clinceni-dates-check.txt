@@ -1,0 +1,116 @@
+================================================================
+FILE: 1. Cerere de admitere.docx
+================================================================
+  Occurrence 1: ...Nr.508/{DATA_CONTRACT}CEREREDEADMITERE Subsemnata {BENEFICIAR_NUME}CNP {BENEF...
+  Occurrence 2: ...rijirea necesară și răspunsul adecvat la nevoile beneficiarului.Data: {DATA_CONTRACT} Semnatura beneficiarului                              ...
+  Total: 2
+
+================================================================
+FILE: 10. Anexa 8 - Acord de închidere centru (2).docx
+================================================================
+  Occurrence 1: ...Anexa nr. 8laContractul Nr. {NUMAR_CONTRACT}/{DATA_CONTRACT} ACORD ÎN CAZUL ÎNCHIDERII CENTRULUISubsemnata {APARTIN...
+  Total: 1
+
+================================================================
+FILE: 11. Anexa 9 - Suspendarea contractului.docx
+================================================================
+  Occurrence 1: ...ANEXĂ nr. 9la Contractul de servicii sociale nr. {NUMAR_CONTRACT}/{DATA_CONTRACT}Privind suspendarea contractuluiÎn temeiul:art. 1.270 ș...
+  Occurrence 2: ...i ale regulamentului intern al furnizorului de servicii sociale.Data: {DATA_CONTRACT}Furnizorul de servicii sociale,       Beneficiarul de s...
+  Total: 2
+
+================================================================
+FILE: 13. PV predare-primire.docx
+================================================================
+  Occurrence 1: ...Nr.{NUMAR_PV}/{DATA_CONTRACT}Nr. exemplare 2Ex. nr.   /2PROCES VERBAL DE PREDARE-PRI...
+  Occurrence 2: ...l Bragadiru, șos. Clinceni, nr.71, județ Ilfov, am predat, în data de {DATA_CONTRACT}, dnei  BADEA-DOROBANȚU MIHAELA-MARIOARA, cu funcția de...
+  Total: 2
+
+================================================================
+FILE: 2. Decizie de admitere.docx
+================================================================
+  Occurrence 1: ...Nr. {NUMAR_DECIZIE}/{DATA_CONTRACT}Decizie de admitere Având în vedere cererea dumneavoast...
+  Occurrence 2: .... Ilfov, oraș Bragadiru, șoseaua Clinceni, nr.71, începând cu data de {DATA_CONTRACT}.Furnizorul de servicii sociale, SC MOBIVIRO SRL       ...
+  Total: 2
+
+================================================================
+FILE: 4. Anexa 1.docx
+================================================================
+  Occurrence 1: ...ANEXANr.1la Contractul nr. {NUMAR_CONTRACT}/{DATA_CONTRACT} DATE CU CARACTER PERSONALAvând în vedere că, începând ...
+  Total: 1
+  HARDCODED DATES: 25.05.2018
+
+================================================================
+FILE: 5. Anexa 2 - angajament de plata.docx
+================================================================
+  Occurrence 1: ...iul în {BENEFICIAR_ADRESA}, conform contractului Nr. {NUMAR_CONTRACT}/{DATA_CONTRACT} ,împreună cu cheltuielile suplimentare aferente celorl...
+  Total: 1
+
+================================================================
+FILE: 6. Anexa 3 - Acord privind prelucrarea datelor cu caracter personal.docx
+================================================================
+  Occurrence 1: ...Anexa nr. 3laContractul Nr. {NUMAR_CONTRACT}/{DATA_CONTRACT}  ACORD PRIVIND PRELUCRAREA DATELOR CU CARACTER PERSONA...
+  Total: 1
+
+================================================================
+FILE: 7. Anexa 4 - Acord utilizare imagine.docx
+================================================================
+  Occurrence 1: ...                    Anexa 4 -la Contractul NR. {NUMAR_CONTRACT}/{DATA_CONTRACT} Acord pentru gestionarea și utilizarea imaginilor și s...
+  Occurrence 2: ...goare.Prezentul acord a fost negociat și semnat de ambele părți, azi, {DATA_CONTRACT}.Furnizorul de servicii sociale,       Beneficiarul de ...
+  Total: 2
+
+================================================================
+FILE: 8. Anexa 5 - Acord schimbare schema de tratament.docx
+================================================================
+  Occurrence 1: ...       ANEXANr.5  laCONTRACTUL Nr. {NUMAR_CONTRACT}/{DATA_CONTRACT}Acord administrare tratamentSubsemnata {APARTINATOR_NUM...
+  Total: 1
+
+================================================================
+FILE: 8. Anexa 6 - Declarație de neasumare (2).docx
+================================================================
+  Occurrence 1: ...Anexa nr.6  la Contractul Nr. {NUMAR_CONTRACT}/{DATA_CONTRACT} DECLARAȚIE DE NEASUMARE                  Subsemnata {B...
+  Total: 1
+
+================================================================
+FILE: 9. Anexa 7 - Acord in cazul schimbarii starii de sanatate (2).docx
+================================================================
+  Occurrence 1: ...ANEXANr.7la CONTRACTUL Nr. {NUMAR_CONTRACT}/{DATA_CONTRACT} În cazul în care Beneficiarul serviciilor de asistență...
+  Total: 1
+
+================================================================
+FILE: ACORD GDPR.docx
+================================================================
+  Occurrence 1: ...ACORD GDPRNr. {NUMAR_GDPR}/{DATA_CONTRACT}Art. 1 – Obiectul anexeiPrezenta anexă are ca obiect in...
+  Occurrence 2: ...crarea și transmiterea datelor conform celor menționate mai sus.Data: {DATA_CONTRACT}Furnizorul de servicii sociale,       Beneficiarul de s...
+  Total: 2
+
+================================================================
+FILE: Adresă PRIMARIE- INTERNARE.docx
+================================================================
+  Occurrence 1: ...Nr.{NUMAR_PRIMARIE}/{DATA_CONTRACT}CĂTRE:DAS MUN. ONEȘTI, JUDEȚUL BACĂUPrin  prezenta,  vă...
+  Occurrence 2: ...UPrin  prezenta,  vă  aducem  la  cunoștință  că, începând cu data de {DATA_CONTRACT},  dna {BENEFICIAR_NUME}, CNP {BENEFICIAR_CNP}, C.I. se...
+  Total: 2
+
+================================================================
+FILE: CONTRACT NOU.docx
+================================================================
+  Occurrence 1: ...                                                 Nr. {NUMAR_CONTRACT}/{DATA_CONTRACT}1. Părțile contractante1.1. SC MOBIVIRO SRL, denumită î...
+  Occurrence 2: ...}/15.04 ;2.2. Planul individualizat de asistență și îngrijire nr. 515/{DATA_CONTRACT}, Planul de intervenție nr. 516/{DATA_CONTRACT}; Planul...
+  Occurrence 3: ...ă și îngrijire nr. 515/{DATA_CONTRACT}, Planul de intervenție nr. 516/{DATA_CONTRACT}; Planul de servicii sociale/Planul individualizat de p...
+  Occurrence 4: ...ciale; Decizia de admitere a furnizorului de servicii sociale  nr.509/{DATA_CONTRACT};2.3. Dispoziția primarului/directorului serviciului pu...
+  Occurrence 5: ...e -.5. Durata contractului5.1. Durata contractului este de la data de {DATA_CONTRACT} pe perioadă nedeterminată.5.2. Durata contractului poa...
+  Total: 5
+
+================================================================
+FILE: DECLARAȚIE BUNURI DE VALOARE CLINCENI.docx
+================================================================
+  Occurrence 1: ...Nr.  {NUMAR_BUNURI}/{DATA_CONTRACT}Ex.unicDeclaratie de inventar al bunurilor de valoare  ...
+  Occurrence 2: ...aloare (indifferent de natura lor) presupus furate sau pierdute.Data: {DATA_CONTRACT}                                                    Sem...
+  Total: 2
+
+================================================================
+FILE: DECLARAȚIE_LUARE_LA_CUNOȘTINȚĂ_ROF_CLINCENI.docx
+================================================================
+  Occurrence 1: ...Nr{NUMAR_ROF}/{DATA_CONTRACT}Ex.unicD E C L A R A Ţ I E          Subsemnata {APARTIN...
+  Occurrence 2: ...are cu care centrul a încheiat un contract de prestări servicii.Data: {DATA_CONTRACT}Benificiar/aparținător:………………………………...
+  Total: 2
+

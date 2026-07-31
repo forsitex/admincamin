@@ -1,0 +1,60 @@
+================================================================
+FILE: 1. Cerere de admitere.docx
+================================================================
+  PROBLEM: "RT" -> ...AR_ADRESA} , , denumită  și  pacient,  și dna {APARTINATOR_NUME},  CNP {APARTINATOR_CNP}, CI seria {AP...
+  {DATA_CONTRACT} count: 2
+
+================================================================
+FILE: 10. PV predare-primire.docx
+================================================================
+  PROBLEM: "RT" -> .... nr.   /2PROCES VERBAL DE PREDARE-PRIMIREDna {APARTINATOR_NUME},  CNP {APARTINATOR_CNP}, CI seria {AP...
+  {DATA_CONTRACT} count: 2
+
+================================================================
+FILE: 2. ACORD GDPR.docx
+================================================================
+  PROBLEM: "RT" -> ...Nr.{NUMAR_GDPR}/{DATA_CONTRACT} S.C. EMPATHY SUPPORT SRL,  cu sediul în Domnesti, Str. Fortunei nr. 11...
+  {DATA_CONTRACT} count: 2
+
+================================================================
+FILE: 3. Decizie de admitere.docx
+================================================================
+  PROBLEM: "RT" -> ...ferite de căminul nostru. Directorul EMPATHY SUPPORT SRL ,decide admiterea dumneavoastră în cadrul Emp...
+  {DATA_CONTRACT} count: 3
+
+================================================================
+FILE: 4. Contract prestare servicii.docx
+================================================================
+  PROBLEM: "RT" -> ...RACT}Părțile contractante: 1.1. S.C. EMPATHY SUPPORT SRL cu sediul  Domnesti, Str. Fortunei nr. 11, CU...
+  {DATA_CONTRACT} count: 3
+
+================================================================
+FILE: 5. Anexa 1 - angajament de plata.docx
+================================================================
+  PROBLEM: "RT" -> .../{DATA_CONTRACT}Angajament de platăSubsemnata {APARTINATOR_NUME},  CNP {APARTINATOR_CNP}, CI seria {AP...
+  {DATA_CONTRACT} count: 2
+
+================================================================
+FILE: 6. Anexa 2 - acord tratament.docx
+================================================================
+  PROBLEM: "RT" -> ...NTRACT}Acord administrare tratamentSubsemnata {APARTINATOR_NUME},  CNP {APARTINATOR_CNP}, CI seria {AP...
+  {DATA_CONTRACT} count: 1
+
+================================================================
+FILE: 7. Anexa 3 - Acord in cazul schimbarii starii de sanatate.docx
+================================================================
+  PROBLEM: "RT" -> ...                         Pacient, SC EMPATHY SUPPORT SRL                 {BENEFICIAR_NUME}            ...
+  {DATA_CONTRACT} count: 1
+
+================================================================
+FILE: 8. Anexa 4 - Funerare.docx
+================================================================
+  PROBLEM: "RT" -> ...furnizării serviciilor oferite de SC EMPATHY SUPPORT SRL.Refuzul dumneavoastră de a vă da acordul cu p...
+  {DATA_CONTRACT} count: 1
+
+================================================================
+FILE: 9. DECLARAȚIE BUNURI DE VALOARE CLINCENI (1).docx
+================================================================
+  PROBLEM: "RT" -> ...e inventar al bunurilor de valoare         Dna{APARTINATOR_NUME}CNP {APARTINATOR_CNP}, CI seria {APART...
+  {DATA_CONTRACT} count: 2
+
