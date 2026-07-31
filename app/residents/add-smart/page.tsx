@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { setDoc, doc } from 'firebase/firestore';
@@ -35,6 +35,7 @@ export default function AddSmartResidentPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -44,6 +45,14 @@ export default function AddSmartResidentPage() {
     });
     return () => unsub();
   }, []);
+
+  // Preia caminId din URL (?camin=cetinei)
+  useEffect(() => {
+    const caminFromUrl = searchParams.get('camin');
+    if (caminFromUrl) {
+      setCaminId(caminFromUrl);
+    }
+  }, [searchParams]);
 
   const [step, setStep] = useState<Step>('beneficiar');
   const [loading2, setLoading2] = useState(false);
@@ -56,7 +65,7 @@ export default function AddSmartResidentPage() {
   const [beneficiarImage, setBeneficiarImage] = useState<string>('');
   const [apartinatorImage, setApartinatorImage] = useState<string>('');
 
-  // Date contract
+  // Date contract — caminId din URL sau din state
   const [caminId, setCaminId] = useState('');
   const [costServiciu, setCostServiciu] = useState('5000');
   const [dataInceput, setDataInceput] = useState(new Date().toISOString().split('T')[0]);
@@ -253,11 +262,11 @@ export default function AddSmartResidentPage() {
         await setDoc(residentRef, resident);
       }
 
-      // Generăm documentele DOCX
+      // Generăm documentele DOCX (cu caminId pentru template-uri specifice)
       const resp = await fetch('/api/generate-documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ residentData: templateData }),
+        body: JSON.stringify({ residentData: templateData, caminId }),
       });
 
       const data = await resp.json();

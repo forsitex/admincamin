@@ -4,26 +4,8 @@ import Docxtemplater from 'docxtemplater';
 import fs from 'fs';
 import path from 'path';
 
-// Lista tuturor template-urilor DOCX curate
-const TEMPLATES = [
-  'CONTRACT NOU.docx',
-  '1. Cerere de admitere.docx',
-  '2. Decizie de admitere.docx',
-  '4. Anexa 1.docx',
-  '5. Anexa 2 - angajament de plata.docx',
-  '6. Anexa 3 - Acord privind prelucrarea datelor cu caracter personal.docx',
-  '7. Anexa 4 - Acord utilizare imagine.docx',
-  '8. Anexa 5 - Acord schimbare schema de tratament.docx',
-  '9. Anexa 6 - Declarație de neasumare.docx',
-  '10. Anexa 7 - Acord in cazul schimbarii starii de sanatate.docx',
-  '11. Anexa 8 - Acord de închidere centru.docx',
-  '11. Anexa 9 - Suspendarea contractului.docx',
-  '13. PV predare-primire.docx',
-  'ACORD GDPR.docx',
-  'Adresă PRIMARIE- INTERNARE.docx',
-  'DECLARAȚIE BUNURI DE VALOARE CLINCENI.docx',
-  'DECLARAȚIE LUARE LA CUNOȘTINȚĂ ROF CLINCENI.docx',
-];
+// Template-urile per locație — fallback la folderul root pentru compatibilitate
+const VALID_CAMIN_IDS = ['cetinei', 'clinceni', 'orhideelor'];
 
 interface ResidentData {
   // Beneficiar
@@ -69,17 +51,30 @@ interface ResidentData {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { residentData } = body as { residentData: ResidentData };
+    const { residentData, caminId } = body as { residentData: ResidentData; caminId?: string };
 
     if (!residentData) {
       return NextResponse.json({ error: 'Lipsesc datele rezidentului' }, { status: 400 });
     }
 
-    const templatesDir = path.join(process.cwd(), 'public', 'templates-clean');
+    // Determinăm folderul de template-uri în funcție de caminId
+    let templatesDir: string;
+    if (caminId && VALID_CAMIN_IDS.includes(caminId)) {
+      templatesDir = path.join(process.cwd(), 'public', 'templates-clean', caminId);
+    } else {
+      // Fallback: folderul root (template-urile vechi)
+      templatesDir = path.join(process.cwd(), 'public', 'templates-clean');
+    }
+
+    // Citim toate fișierele .docx din folderul respectiv
+    const templateFiles = fs.existsSync(templatesDir)
+      ? fs.readdirSync(templatesDir).filter(f => f.endsWith('.docx'))
+      : [];
+
     const documents: { name: string; filename: string; base64: string }[] = [];
     const errors: string[] = [];
 
-    for (const templateFile of TEMPLATES) {
+    for (const templateFile of templateFiles) {
       try {
         const templatePath = path.join(templatesDir, templateFile);
 

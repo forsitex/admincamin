@@ -430,7 +430,7 @@ export default function CaminDetailsPage() {
                     </button>
                   )}
                   <Link
-                    href="/residents/add-smart"
+                    href={`/residents/add-smart?camin=${caminId}`}
                     className="px-4 py-2 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition text-sm"
                   >
                     + Adaugă Rezident
