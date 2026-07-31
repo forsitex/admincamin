@@ -411,7 +411,7 @@ function AddSmartResidentInner() {
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <img src={beneficiarImage} alt="Buletin" className="w-full rounded-lg border" />
                   <button
@@ -423,7 +423,7 @@ function AddSmartResidentInner() {
                 </div>
                 <div>
                   {loading2 && !beneficiarData ? (
-                    <div className="flex flex-col items-center justify-center h-full">
+                    <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
                       <div className="w-10 h-10 border-4 border-blue-900 border-t-transparent rounded-full animate-spin mb-3" />
                       <p className="text-sm text-gray-500">AI extrage datele...</p>
                     </div>
@@ -485,7 +485,7 @@ function AddSmartResidentInner() {
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <img src={apartinatorImage} alt="Buletin" className="w-full rounded-lg border" />
                   <button
@@ -497,7 +497,7 @@ function AddSmartResidentInner() {
                 </div>
                 <div>
                   {loading2 && !apartinatorData ? (
-                    <div className="flex flex-col items-center justify-center h-full">
+                    <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
                       <div className="w-10 h-10 border-4 border-blue-900 border-t-transparent rounded-full animate-spin mb-3" />
                       <p className="text-sm text-gray-500">AI extrage datele...</p>
                     </div>
@@ -551,7 +551,7 @@ function AddSmartResidentInner() {
         {step === 'contract' && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4">Step 3: Date Contract</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">Cămin</label>
                 <select
@@ -599,7 +599,7 @@ function AddSmartResidentInner() {
             {/* Rezumat date */}
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="font-medium text-gray-700 mb-2">Rezumat:</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500">Beneficiar:</p>
                   <p className="font-medium">{beneficiarData?.nume_complet}</p>
@@ -655,9 +655,9 @@ function AddSmartResidentInner() {
 
             <div className="space-y-2">
               {generatedDocs.map((doc, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold text-xs">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold text-xs shrink-0">
                       DOCX
                     </div>
                     <div>
@@ -667,7 +667,7 @@ function AddSmartResidentInner() {
                   </div>
                   <button
                     onClick={() => downloadDoc(doc)}
-                    className="px-3 py-1.5 bg-blue-900 text-white text-sm rounded-lg hover:bg-blue-800"
+                    className="px-3 py-1.5 bg-blue-900 text-white text-sm rounded-lg hover:bg-blue-800 self-start sm:self-auto"
                   >
                     Descarcă
                   </button>

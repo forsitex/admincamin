@@ -152,25 +152,25 @@ function SuccessPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="max-w-none mx-auto px-6 py-12">
-        <div className="max-w-none mx-auto">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="max-w-2xl mx-auto">
           {/* Success Icon */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-24 h-24 bg-green-100 rounded-full mb-6 animate-bounce">
               <CheckCircle className="w-16 h-16 text-green-600" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-3">
               Rezident Înregistrat cu Succes!
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-base sm:text-xl text-gray-600">
               <strong>{resident.beneficiarNumeComplet}</strong> a fost adăugat în{' '}
               <strong>{location?.name}</strong>
             </p>
           </div>
 
           {/* Info Card */}
-          <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Detalii Înregistrare</h2>
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Detalii Înregistrare</h2>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div>
@@ -400,7 +400,7 @@ function SuccessPageContent() {
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Link
               href="/dashboard"
               className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition"

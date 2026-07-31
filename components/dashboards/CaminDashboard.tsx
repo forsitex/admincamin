@@ -63,12 +63,12 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
       </div>
 
       {/* Statistici */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Locații</p>
-              <p className="text-3xl font-bold text-[#1a2b4a] mt-2">{totalLocations}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-[#1a2b4a] mt-2">{totalLocations}</p>
             </div>
             <div className="w-11 h-11 bg-[#1a2b4a]/5 rounded-lg flex items-center justify-center">
               <Building className="w-5 h-5 text-[#1a2b4a]" />
@@ -76,11 +76,11 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Capacitate Totală</p>
-              <p className="text-3xl font-bold text-[#1a2b4a] mt-2">{totalCapacity}</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Capacitate</p>
+              <p className="text-2xl sm:text-3xl font-bold text-[#1a2b4a] mt-2">{totalCapacity}</p>
             </div>
             <div className="w-11 h-11 bg-[#1a2b4a]/5 rounded-lg flex items-center justify-center">
               <Users className="w-5 h-5 text-[#1a2b4a]" />
@@ -88,11 +88,11 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Rezidenți Activi</p>
-              <p className="text-3xl font-bold text-[#1a2b4a] mt-2">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Rezidenți</p>
+              <p className="text-2xl sm:text-3xl font-bold text-[#1a2b4a] mt-2">
                 {loadingCounts ? '...' : totalResidents}
               </p>
             </div>
@@ -102,11 +102,11 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Ocupare</p>
-              <p className="text-3xl font-bold text-[#1a2b4a] mt-2">
+              <p className="text-2xl sm:text-3xl font-bold text-[#1a2b4a] mt-2">
                 {loadingCounts ? '...' : `${occupancyRate}%`}
               </p>
             </div>
@@ -123,7 +123,7 @@ export default function CaminDashboard({ locations, onDelete }: CaminDashboardPr
           <h2 className="text-xl font-bold text-[#1a2b4a]">Locațiile Empathy</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {locations.map((location, index) => {
             const isEmpathyLocation = EMPATHY_LOCATION_IDS.includes(location.id);
             const locCount = residentCounts[location.id] || 0;

@@ -85,15 +85,15 @@ export default function AddCaminPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-none mx-auto px-4 sm:px-6 py-12">
-        <div className="max-w-none mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+      <div className="max-w-none mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
             {/* Icon */}
             <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Building className="w-10 h-10 text-purple-600" />
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-2">
               Adaugă Cămin Nou
             </h1>
             <p className="text-gray-600 text-center mb-8">
@@ -241,7 +241,7 @@ export default function AddCaminPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-purple-600 text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-purple-600 text-white rounded-xl font-bold text-base sm:text-lg hover:bg-purple-700 transition shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>

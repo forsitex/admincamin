@@ -245,17 +245,17 @@ export default function CaminDetailsPage() {
         <div className="max-w-none mx-auto space-y-6">
           {/* Detalii Cămin */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-[#1a2b4a]/5 rounded-xl flex items-center justify-center">
-                  <Building className="w-7 h-7 text-[#1a2b4a]" />
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+              <div className="flex items-center gap-4 sm:gap-5">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#1a2b4a]/5 rounded-xl flex items-center justify-center shrink-0">
+                  <Building className="w-6 h-6 sm:w-7 sm:h-7 text-[#1a2b4a]" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-[#1a2b4a]">{camin.name}</h1>
+                  <h1 className="text-xl sm:text-2xl font-bold text-[#1a2b4a]">{camin.name}</h1>
                   <p className="text-gray-500 mt-1 text-sm">{camin.address}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {residents.filter(r => r.status === 'externat').length > 0 && (
                   <button
                     onClick={() => {
@@ -287,7 +287,7 @@ export default function CaminDetailsPage() {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div className="bg-[#f5f5f0] rounded-lg p-4 border border-gray-200">
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Telefon</p>
                 <p className="text-lg font-semibold text-[#1a2b4a]">{camin.phone || '—'}</p>
@@ -410,11 +410,11 @@ export default function CaminDetailsPage() {
 
           {/* Lista Rezidenți */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                 <h2 className="text-lg font-bold text-[#1a2b4a]">
                   Rezidenți ({residents.length})
                 </h2>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {residents.length > 0 && (
                     <button
                       onClick={handleDeleteAllResidents}
@@ -457,7 +457,7 @@ export default function CaminDetailsPage() {
                       key={resident.cnp}
                       className="bg-[#f5f5f0] rounded-lg p-5 hover:shadow-md transition border border-gray-200"
                     >
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
                         <Link href={`/residents/${resident.cnp}`} className="hover:text-[#c9a96e] transition">
                           <h3 className="text-base font-bold text-[#1a2b4a]">{resident.beneficiarNumeComplet}</h3>
                           <p className="text-xs text-gray-500">CNP: {resident.cnp}</p>
@@ -467,7 +467,7 @@ export default function CaminDetailsPage() {
                             </span>
                           )}
                         </Link>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           {resident.status !== 'externat' && (
                             <button
                               onClick={() => {
@@ -516,14 +516,14 @@ export default function CaminDetailsPage() {
           {/* Lista Externați */}
           {showExternati && (
             <div ref={externatiRef} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 scroll-mt-4">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                 <h2 className="text-lg font-bold text-[#1a2b4a] flex items-center gap-2">
                   <LogOut className="w-5 h-5 text-[#c9a96e]" />
                   Rezidenți Externați ({residents.filter(r => r.status === 'externat').length})
                 </h2>
                 <button
                   onClick={() => setShowExternati(false)}
-                  className="text-gray-400 hover:text-gray-600 text-sm"
+                  className="text-gray-400 hover:text-gray-600 text-sm self-start sm:self-auto"
                 >
                   Ascunde
                 </button>
@@ -534,12 +534,12 @@ export default function CaminDetailsPage() {
                     key={resident.cnp}
                     className="bg-gray-50 rounded-lg p-5 border border-gray-200 opacity-75"
                   >
-                    <div className="flex justify-between items-start mb-3">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
                       <Link href={`/residents/${resident.cnp}`} className="hover:text-[#c9a96e] transition">
                         <h3 className="text-base font-bold text-gray-700">{resident.beneficiarNumeComplet}</h3>
                         <p className="text-xs text-gray-400">CNP: {resident.cnp}</p>
                       </Link>
-                      <span className="px-2 py-1 bg-gray-200 text-gray-600 text-xs font-medium rounded-full">
+                      <span className="px-2 py-1 bg-gray-200 text-gray-600 text-xs font-medium rounded-full self-start">
                         Externat · {resident.dataExternare}
                       </span>
                     </div>
