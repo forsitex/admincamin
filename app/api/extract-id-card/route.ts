@@ -43,7 +43,15 @@ Extract ALL visible text fields from this document image and return them as JSON
 IMPORTANT RULES:
 1. data_nasterii MUST be calculated from CNP, not read from the image. Example: CNP 2810501410077 -> born 01.10.1981 (female, year 81=1981, month 10, day 01)
 2. ci_data_eliberarii and ci_valabil_pana appear together as "issue_date - expiry_date" on the document. Split them.
-3. Return ONLY the JSON, no other text.`;
+3. Return ONLY the JSON, no other text.
+
+CRITICAL OCR RULES FOR ROMANIAN ID CARDS:
+- Pay special attention to similar-looking letters: P vs R, P vs B, R vs K, B vs R, D vs O, O vs Q
+- The CI series (ci_serie) is exactly 2 UPPERCASE letters. Common valid series: AZ, BC, CG, CJ, CK, CL, CN, CS, CT, CV, DB, DJ, GJ, GL, GR, HD, HR, IF, IL, IS, MH, MM, MS, NT, OT, PH, SB, SJ, SM, SV, TL, TM, TR, VL, VS, VN
+- If a letter looks like P or R, check context: Romanian county codes use both (PH=Prahova, but no county starts with R alone). Series like "RT" is valid for Bucharest sector, "PH" for Prahova.
+- For CNP: all 13 digits must be numeric. If any character looks ambiguous (O vs 0, I vs 1, S vs 5, B vs 8), prefer the DIGIT interpretation.
+- Double-check the name: Romanian names may contain special characters (ă, â, î, ș, ț). Preserve them exactly.
+- If the name contains a letter that could be P or R, look at the surrounding letters carefully. "POPA" is common, "ROPA" is not. "POP" is common, "ROP" is not. "PITORAC" vs "RITORAC" - check carefully.`;
 
 export async function POST(request: NextRequest) {
   try {
