@@ -20,6 +20,7 @@ export default function CaminDetailsPage() {
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
+  const [deletingResidentId, setDeletingResidentId] = useState<string | null>(null);
   const [externingId, setExterningId] = useState<string | null>(null);
   const [showExternModal, setShowExternModal] = useState<string | null>(null);
   const [externDate, setExternDate] = useState(new Date().toISOString().split('T')[0]);
@@ -184,6 +185,25 @@ export default function CaminDetailsPage() {
       alert('Eroare la re-internare. Încearcă din nou.');
     } finally {
       setExterningId(null);
+    }
+  };
+
+  const handleDeleteResident = async (residentCnp: string, residentName: string) => {
+    if (!confirm(`Sigur vrei să ștergi DEFINITIV rezidentul "${residentName}"?\nAceastă acțiune nu poate fi anulată.`)) return;
+
+    setDeletingResidentId(residentCnp);
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      await deleteDoc(doc(db, 'organizations', user.uid, 'locations', caminId, 'residents', residentCnp));
+      await loadResidents();
+      console.log('✅ Rezident șters definitiv');
+    } catch (error) {
+      console.error('❌ Eroare ștergere rezident:', error);
+      alert('Eroare la ștergere. Încearcă din nou.');
+    } finally {
+      setDeletingResidentId(null);
     }
   };
 
@@ -412,10 +432,10 @@ export default function CaminDetailsPage() {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                 <h2 className="text-lg font-bold text-[#1a2b4a]">
-                  Rezidenți ({residents.length})
+                  Rezidenți Activi ({residents.filter(r => r.status !== 'externat').length})
                 </h2>
                 <div className="flex flex-wrap items-center gap-2">
-                  {residents.length > 0 && (
+                  {residents.filter(r => r.status !== 'externat').length > 0 && (
                     <button
                       onClick={handleDeleteAllResidents}
                       disabled={deletingAll}
@@ -443,16 +463,16 @@ export default function CaminDetailsPage() {
                   <div className="w-16 h-16 border-4 border-[#1a2b4a] border-t-transparent rounded-full animate-spin mx-auto"></div>
                   <p className="text-gray-500 mt-4 text-sm">Încărcare rezidenți...</p>
                 </div>
-              ) : residents.length === 0 ? (
+              ) : residents.filter(r => r.status !== 'externat').length === 0 ? (
                 <div className="text-center py-16">
                   <div className="w-20 h-20 bg-[#1a2b4a]/5 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Users className="w-10 h-10 text-[#1a2b4a]/40" />
                   </div>
-                  <p className="text-gray-500 text-sm">Nu există rezidenți adăugați încă</p>
+                  <p className="text-gray-500 text-sm">Nu există rezidenți activi</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {residents.map((resident) => (
+                  {residents.filter(r => r.status !== 'externat').map((resident) => (
                     <div
                       key={resident.cnp}
                       className="bg-[#f5f5f0] rounded-lg p-5 hover:shadow-md transition border border-gray-200"
@@ -514,19 +534,13 @@ export default function CaminDetailsPage() {
           </div>
 
           {/* Lista Externați */}
-          {showExternati && (
+          {residents.filter(r => r.status === 'externat').length > 0 && (
             <div ref={externatiRef} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 scroll-mt-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                 <h2 className="text-lg font-bold text-[#1a2b4a] flex items-center gap-2">
                   <LogOut className="w-5 h-5 text-[#c9a96e]" />
                   Rezidenți Externați ({residents.filter(r => r.status === 'externat').length})
                 </h2>
-                <button
-                  onClick={() => setShowExternati(false)}
-                  className="text-gray-400 hover:text-gray-600 text-sm self-start sm:self-auto"
-                >
-                  Ascunde
-                </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {residents.filter(r => r.status === 'externat').map((resident) => (
@@ -551,16 +565,27 @@ export default function CaminDetailsPage() {
                         <p><span className="font-medium">Grad:</span> {resident.gradDependenta}</p>
                       )}
                     </div>
-                    <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="mt-3 pt-3 border-t border-gray-200 flex flex-wrap gap-2">
                       <button
                         onClick={() => handleReinternareResident(resident.cnp)}
-                        disabled={externingId === resident.cnp}
+                        disabled={externingId === resident.cnp || deletingResidentId === resident.cnp}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg font-medium hover:bg-green-100 transition text-xs disabled:opacity-50"
                       >
                         {externingId === resident.cnp ? (
                           <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Se procesează...</>
                         ) : (
                           <><UserCheck className="w-3.5 h-3.5" /> Re-internare</>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteResident(resident.cnp, resident.beneficiarNumeComplet)}
+                        disabled={externingId === resident.cnp || deletingResidentId === resident.cnp}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition text-xs disabled:opacity-50"
+                      >
+                        {deletingResidentId === resident.cnp ? (
+                          <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Ștergere...</>
+                        ) : (
+                          <><Trash2 className="w-3.5 h-3.5" /> Șterge definitiv</>
                         )}
                       </button>
                     </div>
