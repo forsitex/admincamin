@@ -181,6 +181,12 @@ export default function AddSmartResidentPage() {
     setGeneratedDocs([]);
     setGenErrors([]);
 
+    if (!caminId) {
+      setError('Trebuie să alegi un cămin. Te rog să accesezi această pagină din pagina căminului.');
+      setLoading2(false);
+      return;
+    }
+
     try {
       // Generăm numere pentru documente
       const dataContract = new Date(dataInceput).toLocaleDateString('ro-RO');
@@ -380,6 +386,7 @@ export default function AddSmartResidentPage() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  capture="environment"
                   className="hidden"
                   onChange={(e) => handleFileUpload(e, 'beneficiar')}
                 />
@@ -435,6 +442,7 @@ export default function AddSmartResidentPage() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  capture="environment"
                   className="hidden"
                   onChange={(e) => handleFileUpload(e, 'apartinator')}
                 />
