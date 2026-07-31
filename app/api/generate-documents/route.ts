@@ -58,13 +58,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Determinăm folderul de template-uri în funcție de caminId
-    let templatesDir: string;
-    if (caminId && VALID_CAMIN_IDS.includes(caminId)) {
-      templatesDir = path.join(process.cwd(), 'public', 'templates-clean', caminId);
-    } else {
-      // Fallback: folderul root (template-urile vechi)
-      templatesDir = path.join(process.cwd(), 'public', 'templates-clean');
+    if (!caminId || !VALID_CAMIN_IDS.includes(caminId)) {
+      return NextResponse.json({ error: 'caminId invalid sau lipsă. Valide: cetinei, clinceni, orhideelor' }, { status: 400 });
     }
+    const templatesDir = path.join(process.cwd(), 'public', 'templates-clean', caminId);
 
     // Citim toate fișierele .docx din folderul respectiv
     const templateFiles = fs.existsSync(templatesDir)
