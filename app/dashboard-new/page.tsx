@@ -238,10 +238,10 @@ export default function DashboardNewPage() {
       <div className="flex-1 bg-[#f5f5f0]">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-none mx-auto px-4 sm:px-6 py-5">
-          <div className="flex items-center justify-between">
+        <div className="max-w-none mx-auto px-4 sm:px-6 py-5 pl-14 md:pl-6">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
-              <h1 className="text-2xl font-bold text-[#1a2b4a]">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#1a2b4a]">
                 {company?.name}
               </h1>
               <p className="text-gray-500 text-sm mt-0.5">{camine.length} locații</p>
@@ -249,10 +249,11 @@ export default function DashboardNewPage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/import"
-                className="flex items-center gap-2 px-4 py-2 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition text-sm"
               >
                 <Plus className="w-4 h-4" />
-                Import Rezidenți
+                <span className="hidden sm:inline">Import Rezidenți</span>
+                <span className="sm:hidden">Import</span>
               </Link>
               
               {/* Profile Dropdown */}

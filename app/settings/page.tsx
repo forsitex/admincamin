@@ -90,8 +90,8 @@ export default function SettingsPage() {
       <div className="flex-1 bg-[#f5f5f0]">
         {/* Header */}
         <div className="bg-white border-b border-gray-200">
-          <div className="max-w-none mx-auto px-4 sm:px-6 py-5">
-            <div className="flex items-center justify-between">
+          <div className="max-w-none mx-auto px-4 sm:px-6 py-5 pl-14 md:pl-6">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => router.push('/dashboard-new')}
@@ -99,12 +99,12 @@ export default function SettingsPage() {
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
-                <h1 className="text-2xl font-bold text-[#1a2b4a]">Setări</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-[#1a2b4a]">Setări</h1>
               </div>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition disabled:opacity-50"
+                className="flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-[#1a2b4a] text-white rounded-lg font-medium hover:bg-[#243759] transition disabled:opacity-50 text-sm"
               >
                 {saving ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Se salvează...</>

@@ -37,6 +37,7 @@ function AddSmartResidentInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -375,18 +376,36 @@ function AddSmartResidentInner() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4">Step 1: Buletin Beneficiar</h2>
             {!beneficiarImage ? (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
-              >
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
                 <div className="text-4xl mb-3">📷</div>
-                <p className="text-gray-600 font-medium">Click pentru a încărca poza buletinului</p>
-                <p className="text-sm text-gray-400 mt-1">PNG, JPG, JPEG — max 10MB</p>
+                <p className="text-gray-600 font-medium mb-4">Buletin beneficiar</p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-2.5 bg-blue-900 text-white rounded-lg font-medium hover:bg-blue-800 transition text-sm"
+                  >
+                    📷 Fă poză
+                  </button>
+                  <button
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition text-sm"
+                  >
+                    📁 Din galerie
+                  </button>
+                </div>
+                <p className="text-sm text-gray-400 mt-3">PNG, JPG, JPEG — max 10MB</p>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   capture="environment"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e, 'beneficiar')}
+                />
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
                   className="hidden"
                   onChange={(e) => handleFileUpload(e, 'beneficiar')}
                 />
@@ -431,18 +450,36 @@ function AddSmartResidentInner() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4">Step 2: Buletin Apartinător</h2>
             {!apartinatorImage ? (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
-              >
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
                 <div className="text-4xl mb-3">📷</div>
-                <p className="text-gray-600 font-medium">Click pentru a încărca poza buletinului apartinătorului</p>
-                <p className="text-sm text-gray-400 mt-1">PNG, JPG, JPEG — max 10MB</p>
+                <p className="text-gray-600 font-medium mb-4">Buletin apartinător</p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-2.5 bg-blue-900 text-white rounded-lg font-medium hover:bg-blue-800 transition text-sm"
+                  >
+                    📷 Fă poză
+                  </button>
+                  <button
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition text-sm"
+                  >
+                    📁 Din galerie
+                  </button>
+                </div>
+                <p className="text-sm text-gray-400 mt-3">PNG, JPG, JPEG — max 10MB</p>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   capture="environment"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e, 'apartinator')}
+                />
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
                   className="hidden"
                   onChange={(e) => handleFileUpload(e, 'apartinator')}
                 />

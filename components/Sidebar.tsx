@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Menu,
+  X
 } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -22,6 +24,12 @@ export default function Sidebar({ company, userEmail, organizationType = 'camin'
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Închide sidebar-ul pe mobil la navigare
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -37,11 +45,42 @@ export default function Sidebar({ company, userEmail, organizationType = 'camin'
   const orgTypeLabel = getOrganizationTypeLabel(organizationType);
 
   return (
-    <div 
-      className={`${
-        collapsed ? 'w-20' : 'w-72'
-      } bg-[#1a2b4a] min-h-screen flex flex-col transition-all duration-300`}
-    >
+    <>
+      {/* Hamburger button — doar pe mobil */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#1a2b4a] text-white shadow-lg"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
+
+      {/* Overlay — doar pe mobil când sidebar e deschis */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+        />
+      )}
+
+      {/* Sidebar */}
+      <div 
+        className={`${
+          collapsed ? 'w-20' : 'w-72'
+        } bg-[#1a2b4a] min-h-screen flex flex-col transition-all duration-300
+        fixed md:sticky top-0 z-50 md:z-auto
+        ${mobileOpen ? 'left-0' : '-left-full md:left-0'}
+        h-screen md:h-auto`}
+      >
+      {/* Close button — doar pe mobil */}
+      {mobileOpen && (
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden absolute top-4 right-4 p-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
+
       {/* Header */}
       <div className="p-5 border-b border-white/10">
         <div className="flex items-center justify-between">
@@ -116,6 +155,7 @@ export default function Sidebar({ company, userEmail, organizationType = 'camin'
           {!collapsed && <span className="text-sm font-medium">Deconectare</span>}
         </button>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
