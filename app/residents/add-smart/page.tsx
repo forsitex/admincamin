@@ -78,8 +78,8 @@ function AddSmartResidentInner() {
   const [generatedDocs, setGeneratedDocs] = useState<GeneratedDoc[]>([]);
   const [genErrors, setGenErrors] = useState<string[]>([]);
 
-  // Compresie imagine cu canvas (max 1200px, JPEG quality 0.7)
-  const compressImage = (dataUrl: string, maxWidth: number = 1200): Promise<{ base64: string; dataUrl: string; mimeType: string }> => {
+  // Compresie imagine cu canvas (max 800px, JPEG quality 0.7)
+  const compressImage = (dataUrl: string, maxWidth: number = 800): Promise<{ base64: string; dataUrl: string; mimeType: string }> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
